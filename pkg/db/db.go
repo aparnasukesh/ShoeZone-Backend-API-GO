@@ -9,7 +9,9 @@ import (
 	"gorm.io/gorm"
 )
 
-func DbConnect() *gorm.DB {
+var DB *gorm.DB
+
+func DbConnect() {
 
 	host := os.Getenv("DBHOST")
 	dbUserName := os.Getenv("postgres")
@@ -23,5 +25,5 @@ func DbConnect() *gorm.DB {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	return db
+	DB = db
 }
