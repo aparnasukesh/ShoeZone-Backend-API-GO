@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/aparnasukesh/shoezone/pkg/domain"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -14,7 +15,7 @@ var DB *gorm.DB
 func DbConnect() {
 
 	host := os.Getenv("DBHOST")
-	dbUserName := os.Getenv("postgres")
+	dbUserName := os.Getenv("DBUSER")
 	pass := os.Getenv("DBPASSWORD")
 	dbname := os.Getenv("DBNAME")
 	port := os.Getenv("DBPORT")
@@ -26,4 +27,6 @@ func DbConnect() {
 		log.Fatal(err.Error())
 	}
 	DB = db
+	DB.AutoMigrate(&domain.User{})
+
 }
