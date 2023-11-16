@@ -7,6 +7,17 @@ import (
 
 func Routes(r *gin.Engine) {
 
-	r.POST("/user/register", handler.RegisterUser)
-	r.POST("/user/register/validate", handler.RegisterValidtae)
+	userGroup := r.Group("/user")
+	{
+		userGroup.POST("/register", handler.RegisterUser)
+		userGroup.POST("/register/validate", handler.RegisterValidate)
+		userGroup.POST("/login", handler.UserLogin)
+	}
+
+	adminGroup := r.Group("/admin")
+	{
+		adminGroup.GET("/user", handler.AdminAuthRequired)
+		adminGroup.GET("/user/:id")
+	}
+
 }

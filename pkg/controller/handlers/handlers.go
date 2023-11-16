@@ -5,13 +5,15 @@ import (
 
 	"github.com/aparnasukesh/shoezone/pkg/domain"
 	"github.com/aparnasukesh/shoezone/pkg/usecase"
+	"github.com/aparnasukesh/shoezone/pkg/util"
 	"github.com/gin-gonic/gin"
 )
 
 func RegisterUser(ctx *gin.Context) {
-	userDate := domain.User{}
 
-	if err := ctx.ShouldBindJSON(&userDate); err != nil {
+	userData := domain.User{}
+
+	if err := ctx.ShouldBindJSON(&userData); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"Success": false,
 			"Message": "Binding error",
@@ -20,7 +22,7 @@ func RegisterUser(ctx *gin.Context) {
 		return
 	}
 
-	err := usecase.RegisterUser(&userDate)
+	err := usecase.RegisterUser(&userData)
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"Success": false,
@@ -38,7 +40,7 @@ func RegisterUser(ctx *gin.Context) {
 
 }
 
-func RegisterValidtae(ctx *gin.Context) {
+func RegisterValidate(ctx *gin.Context) {
 	userData := domain.User{}
 
 	if err := ctx.ShouldBindJSON(&userData); err != nil {
@@ -65,3 +67,43 @@ func RegisterValidtae(ctx *gin.Context) {
 		"Data":    userData,
 	})
 }
+
+func UserLogin(ctx *gin.Context) {
+	userData := domain.User{}
+	if err := ctx.ShouldBindJSON(&userData); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Binding error",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	err := usecase.UserLogin(&userData)
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"Success": false,
+			"Message": "Login failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+
+	token, err := util.GenerateJWT(userData)
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"Success": false,
+			"Message": "Login failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success": true,
+		"Message": "Succesfully Login",
+		"Error":   nil,
+		"Token":   token,
+	})
+
+}
+func GetUsers()
