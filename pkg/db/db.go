@@ -28,5 +28,8 @@ func DbConnect() {
 	}
 	DB = db
 	DB.AutoMigrate(&domain.User{})
+	DB.AutoMigrate(&domain.Brand{})
+	DB.AutoMigrate(&domain.Catogery{})
+	DB.AutoMigrate(&domain.Product{})
 
 }

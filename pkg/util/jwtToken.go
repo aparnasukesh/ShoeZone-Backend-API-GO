@@ -17,11 +17,10 @@ func GenerateJWT(userData domain.User) (string, error) {
 	claims := token.Claims.(jwt.MapClaims)
 
 	// Set the claims (e.g., username, expiration, issued at, etc.)
-	fmt.Println("=============", userData.Isadmin)
 
 	claims["role"] = userData.Isadmin
 	claims["email"] = userData.Email
-	claims["userid"] = userData.Id
+	claims["userid"] = userData.ID
 	claims["exp"] = time.Now().Add(time.Hour * 24).Unix() // Token expiration time (e.g., 24 hours from now)
 	claims["iat"] = time.Now().Unix()                     // Token issued at
 
