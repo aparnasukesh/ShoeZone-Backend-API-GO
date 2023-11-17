@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/aparnasukesh/shoezone/pkg/domain"
@@ -78,7 +79,7 @@ func UserLogin(ctx *gin.Context) {
 		})
 		return
 	}
-	err := usecase.UserLogin(&userData)
+	err, res := usecase.UserLogin(&userData)
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"Success": false,
@@ -88,7 +89,9 @@ func UserLogin(ctx *gin.Context) {
 		return
 	}
 
-	token, err := util.GenerateJWT(userData)
+	fmt.Println("======================================", res.Isadmin)
+
+	token, err := util.GenerateJWT(*res)
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"Success": false,
@@ -106,4 +109,26 @@ func UserLogin(ctx *gin.Context) {
 	})
 
 }
-func GetUsers()
+func GetUsers(ctx *gin.Context) {
+	res, err := usecase.GetUsers()
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Get users failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success":   true,
+		"Message":   "User Details",
+		"Error":     nil,
+		"User Data": res,
+	})
+
+}
+
+// func GetUserByID(ctx *gin.Context) {
+
+// }

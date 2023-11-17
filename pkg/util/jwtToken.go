@@ -1,7 +1,6 @@
 package util
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"time"
@@ -18,6 +17,8 @@ func GenerateJWT(userData domain.User) (string, error) {
 	claims := token.Claims.(jwt.MapClaims)
 
 	// Set the claims (e.g., username, expiration, issued at, etc.)
+	fmt.Println("=============", userData.Isadmin)
+
 	claims["role"] = userData.Isadmin
 	claims["email"] = userData.Email
 	claims["userid"] = userData.Id
@@ -54,14 +55,16 @@ func VerifyJWT(tokenString string) (*jwt.Token, error) {
 	return token, nil
 }
 
-func Getrole(token *jwt.Token) (bool, error) {
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok {
-		return false, errors.New("Error extracting claims")
-	}
+func Getrole(token *jwt.Token) (interface{}, error) {
+	claims, _ := token.Claims.(jwt.MapClaims)
+	// if !ok {
+	// 	return false, errors.New("Error extracting claims")
+	// }
+	role := claims["role"]
+	return role, nil
 
-	if role := claims["role"]; role == true {
-		return true, nil
-	}
-	return false, nil
+	// if role := claims["role"]; role == true {
+	// 	return true, nil
+	// }
+	// return false, nil
 }

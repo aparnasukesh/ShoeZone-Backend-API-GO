@@ -2,6 +2,7 @@ package controller
 
 import (
 	handler "github.com/aparnasukesh/shoezone/pkg/controller/handlers"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,10 +15,10 @@ func Routes(r *gin.Engine) {
 		userGroup.POST("/login", handler.UserLogin)
 	}
 
-	adminGroup := r.Group("/admin")
+	adminGroup := r.Group("/admin", handler.AdminAuthRequired)
 	{
-		adminGroup.GET("/user", handler.AdminAuthRequired)
-		adminGroup.GET("/user/:id")
+		adminGroup.GET("/user", handler.GetUsers)
+		//adminGroup.GET("/user/:id", handler.GetUserByID)
 	}
 
 }

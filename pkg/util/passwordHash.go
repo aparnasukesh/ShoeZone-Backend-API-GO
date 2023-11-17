@@ -13,5 +13,6 @@ func HashPassword(password string) string {
 
 func VerifyPassword(requestPassword, dbPassword string) bool {
 	requestPassword = fmt.Sprintf("%x", md5.Sum([]byte(requestPassword)))
+	fmt.Println(requestPassword, dbPassword)
 	return requestPassword == dbPassword
 }

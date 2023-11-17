@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/aparnasukesh/shoezone/pkg/domain"
 	"github.com/aparnasukesh/shoezone/pkg/repository"
@@ -47,16 +48,29 @@ func RegisterValidate(userData *domain.User) error {
 	return errors.New("Invalid otp")
 }
 
-func UserLogin(userData *domain.User) error {
+func UserLogin(userData *domain.User) (error, *domain.User) {
 	res, err := repository.FindUserByEmail(userData)
+
 	if err != nil {
-		return err
+		return err, nil
 	}
-	isVerified := util.VerifyPassword(userData.Password, res.Password)
-	if userData.Email == res.Email && isVerified == true {
-		return nil
+
+	if res.Isadmin == false {
+		isVerified := util.VerifyPassword(userData.Password, res.Password)
+		if userData.Email == res.Email && isVerified == true {
+			fmt.Println(userData.Password, res.Password)
+
+			return nil, res
+		}
 	}
-	return errors.New("Incorrect Password")
+
+	if res.Isadmin == true {
+		fmt.Println("??????????????????????", res.Isadmin)
+		if userData.Email == res.Email && userData.Password == res.Password {
+			return nil, res
+		}
+	}
+	return errors.New("Incorrect Password"), nil
 
 }
 
