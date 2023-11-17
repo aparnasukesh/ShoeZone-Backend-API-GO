@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/aparnasukesh/shoezone/pkg/domain"
@@ -88,8 +87,6 @@ func UserLogin(ctx *gin.Context) {
 		})
 		return
 	}
-
-	fmt.Println("======================================", res.Isadmin)
 
 	token, err := util.GenerateJWT(*res)
 	if err != nil {
