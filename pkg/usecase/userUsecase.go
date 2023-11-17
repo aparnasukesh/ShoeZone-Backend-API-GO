@@ -50,9 +50,12 @@ func RegisterValidate(userData *domain.User) error {
 
 func UserLogin(userData *domain.User) (error, *domain.User) {
 	res, err := repository.FindUserByEmail(userData)
-
 	if err != nil {
 		return err, nil
+	}
+
+	if !res.Isverified {
+		return errors.New("Invalid User"), nil
 	}
 
 	if res.Isadmin == false {
@@ -65,7 +68,6 @@ func UserLogin(userData *domain.User) (error, *domain.User) {
 	}
 
 	if res.Isadmin == true {
-		fmt.Println("??????????????????????", res.Isadmin)
 		if userData.Email == res.Email && userData.Password == res.Password {
 			return nil, res
 		}
@@ -74,11 +76,45 @@ func UserLogin(userData *domain.User) (error, *domain.User) {
 
 }
 
-func GetUsers() (*[]domain.User, error) {
+func GetUsers() ([]domain.User, error) {
+	var users []domain.User
 	res, err := repository.GetUsers()
 	if err != nil {
 		return nil, err
 	}
-	return res, nil
+	for _, user := range *res {
+		if !user.Isadmin {
+			users = append(users, user)
+		}
+	}
+	return users, nil
+}
+
+func GetUserByID(userId int) (*domain.User, error) {
+	var user domain.User
+	res, err := repository.GetUserByID(userId)
+	if err != nil {
+		return nil, err
+	}
+	if !res.Isadmin {
+		user = *res
+	}
+	return &user, nil
+}
+
+func BlockUser(id int) error {
+	err := repository.BlockUser(id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func UnblockUser(id int) error {
+	err := repository.UnblockUser(id)
+	if err != nil {
+		return err
+	}
+	return nil
 
 }
