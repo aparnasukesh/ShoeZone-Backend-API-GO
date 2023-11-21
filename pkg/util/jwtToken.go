@@ -56,14 +56,6 @@ func VerifyJWT(tokenString string) (*jwt.Token, error) {
 
 func Getrole(token *jwt.Token) (interface{}, error) {
 	claims, _ := token.Claims.(jwt.MapClaims)
-	// if !ok {
-	// 	return false, errors.New("Error extracting claims")
-	// }
 	role := claims["role"]
 	return role, nil
-
-	// if role := claims["role"]; role == true {
-	// 	return true, nil
-	// }
-	// return false, nil
 }

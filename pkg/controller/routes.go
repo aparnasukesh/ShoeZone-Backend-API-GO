@@ -25,6 +25,10 @@ func Routes(r *gin.Engine) {
 		adminGroup.PATCH("/user/block/:id", handler.BlockUser)
 		adminGroup.PATCH("/user/unblock/:id", handler.UnblockUser)
 
+		// Category Management
+		adminGroup.POST("/category", handler.AddCategories)
+		adminGroup.PUT("/category/:id", handler.UpdateCategory)
+
 		// Product Management
 		adminGroup.POST("/product", handler.AddProduct)
 
