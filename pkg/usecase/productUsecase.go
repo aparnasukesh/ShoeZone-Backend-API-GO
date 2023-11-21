@@ -12,3 +12,15 @@ func AddProduct(productData *domain.Product) error {
 	}
 	return nil
 }
+
+func AddCategories(categoryData *domain.Category) error {
+	err := repository.AddCategories(categoryData)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func UpdateCategory(id int) {
+
+}
