@@ -13,6 +13,8 @@ func Routes(r *gin.Engine) {
 		userGroup.POST("/register", handler.RegisterUser)
 		userGroup.POST("/register/validate", handler.RegisterValidate)
 		userGroup.POST("/login", handler.UserLogin)
+
+		userGroup.GET("/product", handler.GetProducts)
 	}
 
 	adminGroup := r.Group("/admin")
@@ -28,9 +30,17 @@ func Routes(r *gin.Engine) {
 		// Category Management
 		adminGroup.POST("/category", handler.AddCategories)
 		adminGroup.PUT("/category/:id", handler.UpdateCategory)
+		adminGroup.DELETE("/category/:id", handler.DeleteCategory)
+
+		// Brand Management
+		adminGroup.POST("/brand", handler.AddBrand)
+		adminGroup.PUT("/brand/:id", handler.UpdateBrand)
+		adminGroup.DELETE("/brand/:id", handler.DeleteBrand)
 
 		// Product Management
 		adminGroup.POST("/product", handler.AddProduct)
+		adminGroup.PUT("/product/:id", handler.UpdateProduct)
+		adminGroup.DELETE("/product/:id", handler.DeleteProduct)
 
 	}
 

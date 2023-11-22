@@ -106,3 +106,7 @@ func UserLogin(ctx *gin.Context) {
 	})
 
 }
+
+func GetProducts(ctx *gin.Context) {
+
+}

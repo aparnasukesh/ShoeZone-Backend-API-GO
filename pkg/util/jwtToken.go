@@ -54,7 +54,7 @@ func VerifyJWT(tokenString string) (*jwt.Token, error) {
 	return token, nil
 }
 
-func Getrole(token *jwt.Token) (interface{}, error) {
+func GetRole(token *jwt.Token) (interface{}, error) {
 	claims, _ := token.Claims.(jwt.MapClaims)
 	role := claims["role"]
 	return role, nil
