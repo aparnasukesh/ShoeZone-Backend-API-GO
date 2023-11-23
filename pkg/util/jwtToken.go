@@ -16,12 +16,12 @@ func GenerateJWT(userData domain.User) (string, error) {
 	// Create a map to store the claims
 	claims := token.Claims.(jwt.MapClaims)
 
-	// Set the claims (e.g., username, expiration, issued at, etc.)
+	// Set the claims (e.g., role,email,userid, expiration, issued at)
 
 	claims["role"] = userData.Isadmin
 	claims["email"] = userData.Email
 	claims["userid"] = userData.ID
-	claims["exp"] = time.Now().Add(time.Hour * 24).Unix() // Token expiration time (e.g., 24 hours from now)
+	claims["exp"] = time.Now().Add(time.Hour * 24).Unix() // Token expiration time (e.g, 24 hours from now)
 	claims["iat"] = time.Now().Unix()                     // Token issued at
 
 	// Sign the token with a secret key
@@ -54,7 +54,7 @@ func VerifyJWT(tokenString string) (*jwt.Token, error) {
 	return token, nil
 }
 
-func Getrole(token *jwt.Token) (interface{}, error) {
+func GetRole(token *jwt.Token) (interface{}, error) {
 	claims, _ := token.Claims.(jwt.MapClaims)
 	role := claims["role"]
 	return role, nil
