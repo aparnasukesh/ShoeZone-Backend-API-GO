@@ -7,7 +7,6 @@ import (
 )
 
 // Category -----------------------------------------------------------------------------------------------------------------------------
-
 func AddCategories(categoryData *domain.Category) error {
 	err := db.DB.Create(&categoryData)
 	if err != nil {
@@ -98,9 +97,45 @@ func DeleteProduct(id int) error {
 }
 
 func GetProducts(limit, offset int) ([]domain.Product, error) {
-	products := []domain.Product{}
-	if err := db.DB.Limit(limit).Offset(offset).Find(&products).Error; err != nil {
+	product := []domain.Product{}
+
+	if err := db.DB.Preload("ProductCategory").Preload("ProductBrand").Limit(limit).Offset(offset).Find(&product).Error; err != nil {
 		return nil, err
 	}
-	return products, nil
+	return product, nil
+}
+
+func GetProductByID(id int) (*domain.Product, error) {
+	product := domain.Product{}
+	result := db.DB.Preload("ProductCategory").Preload("ProductBrand").First(&product, id)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return &product, nil
+}
+
+func GetProductByBrandID(limit, offset, id int) ([]domain.Product, error) {
+	product := []domain.Product{}
+
+	if err := db.DB.Preload("ProductCategory").Preload("ProductBrand").Limit(limit).Offset(offset).Where("product_brand_id=?", id).Find(&product).Error; err != nil {
+		return nil, err
+	}
+	return product, nil
+}
+
+func GetProductByName(name string) (*domain.Product, error) {
+	product := domain.Product{}
+	if err := db.DB.Preload("ProductCategory").Preload("ProductBrand").Where("product_name ILIKE ?", name).First(&product).Error; err != nil {
+		return nil, err
+	}
+	return &product, nil
+}
+
+func GetProductByCategoryID(limit, offset, id int) ([]domain.Product, error) {
+	product := []domain.Product{}
+
+	if err := db.DB.Preload("ProductCategory").Preload("ProductBrand").Where("product_category_id=?", id).Find(&product).Error; err != nil {
+		return nil, err
+	}
+	return product, nil
 }

@@ -87,3 +87,45 @@ func DeleteProduct(id int) error {
 	}
 	return nil
 }
+
+// User- Products---------------------------------------------------------------------
+
+func GetProducts(limit, offset int) ([]domain.Product, error) {
+	products, err := repository.GetProducts(limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	return products, err
+}
+
+func GetProductByID(id int) (*domain.Product, error) {
+	product, err := repository.GetProductByID(id)
+	if err != nil {
+		return nil, err
+	}
+	return product, nil
+}
+
+func GetProductByBrandID(limit, offset, id int) ([]domain.Product, error) {
+	product, err := repository.GetProductByBrandID(limit, offset, id)
+	if err != nil {
+		return nil, err
+	}
+	return product, nil
+}
+
+func GetProductByName(name string) (*domain.Product, error) {
+	product, err := repository.GetProductByName(name)
+	if err != nil {
+		return nil, err
+	}
+	return product, nil
+}
+
+func GetProductCategoryID(limit, offset, id int) ([]domain.Product, error) {
+	product, err := repository.GetProductByCategoryID(limit, offset, id)
+	if err != nil {
+		return nil, err
+	}
+	return product, nil
+}

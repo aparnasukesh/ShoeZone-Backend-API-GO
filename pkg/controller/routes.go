@@ -15,6 +15,12 @@ func Routes(r *gin.Engine) {
 		userGroup.POST("/login", handler.UserLogin)
 
 		userGroup.GET("/product", handler.GetProducts)
+		userGroup.GET("/product/:id", handler.GetProductByID)
+		userGroup.GET("/product/productname", handler.GetProductByName)
+
+		userGroup.GET("/product/brand", handler.GetProductByBrandID)
+		userGroup.GET("/product/brandname", handler.GetProductByBrandName)
+		userGroup.GET("/product/category", handler.GetProductByCategoryID)
 	}
 
 	adminGroup := r.Group("/admin")
