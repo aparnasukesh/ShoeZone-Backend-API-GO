@@ -32,6 +32,25 @@ func DeleteCategory(id int) error {
 	return nil
 }
 
+func GetCategories() ([]domain.Category, error) {
+	categories := []domain.Category{}
+	res := db.DB.Find(&categories)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	return categories, nil
+}
+
+func GetCategoriesUser() ([]domain.Category, error) {
+	categories := []domain.Category{}
+	res := db.DB.Table("categories").Select("category_name").Find(&categories)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	return categories, nil
+
+}
+
 // Brand----------------------------------------------------------------------------------------------------------------------------------
 
 func AddBrand(newBrand domain.Brand) error {
@@ -58,6 +77,24 @@ func DeleteBrand(id int) error {
 	return nil
 }
 
+func GetBrands() ([]domain.Brand, error) {
+	brands := []domain.Brand{}
+	res := db.DB.Find(&brands)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	return brands, nil
+}
+
+func GetBrandsUser() ([]domain.Brand, error) {
+	brands := []domain.Brand{}
+	res := db.DB.Table("brands").Select("brand_name").Find(&brands)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	return brands, nil
+}
+
 // Product --------------------------------------------------------------------------------------------------------------------------------
 
 func FindProductByProductName(newProduct *domain.Product) (*domain.Product, error) {
@@ -72,6 +109,7 @@ func FindProductByProductName(newProduct *domain.Product) (*domain.Product, erro
 	return productData, nil
 
 }
+
 func AddProduct(productData *domain.Product) error {
 	err := db.DB.Create(&productData)
 	if err != nil {
@@ -135,6 +173,42 @@ func GetProductByCategoryID(limit, offset, id int) ([]domain.Product, error) {
 	product := []domain.Product{}
 
 	if err := db.DB.Preload("ProductCategory").Preload("ProductBrand").Where("product_category_id=?", id).Find(&product).Error; err != nil {
+		return nil, err
+	}
+	return product, nil
+}
+
+func GetBrandIdByBrandName(name string) (int, error) {
+	brand := domain.Brand{}
+	res := db.DB.Where("brand_name ILIKE ?", name).First(&brand)
+	id := brand.ID
+	if res.Error != nil {
+		return 0, res.Error
+	}
+	return int(id), nil
+}
+
+func GetProductByBrandName(id int) ([]domain.Product, error) {
+	product := []domain.Product{}
+	if err := db.DB.Where("product_brand_id=?", id).Find(&product).Error; err != nil {
+		return nil, err
+	}
+	return product, nil
+}
+
+func GetCategoryIDByCategoryName(name string) (int, error) {
+	category := domain.Category{}
+	res := db.DB.Where("category_name ILIKE ?", name).First(&category)
+	id := category.ID
+	if res.Error != nil {
+		return 0, res.Error
+	}
+	return int(id), nil
+}
+
+func GetProductByCategoryName(id int) ([]domain.Product, error) {
+	product := []domain.Product{}
+	if err := db.DB.Where("product_category_id=?", id).Find(&product).Error; err != nil {
 		return nil, err
 	}
 	return product, nil
