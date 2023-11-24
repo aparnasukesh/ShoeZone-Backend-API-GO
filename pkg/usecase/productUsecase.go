@@ -34,6 +34,22 @@ func DeleteCategory(id int) error {
 	return nil
 }
 
+func GetCategories() ([]domain.Category, error) {
+	categories, err := repository.GetCategories()
+	if err != nil {
+		return nil, err
+	}
+	return categories, nil
+}
+
+func GetCategoriesUser() ([]domain.Category, error) {
+	categories, err := repository.GetCategoriesUser()
+	if err != nil {
+		return nil, err
+	}
+	return categories, nil
+}
+
 // Brand------------------------------------------------------------------------------------------
 
 func AddBrand(newBrand domain.Brand) error {
@@ -57,6 +73,23 @@ func DeleteBrand(id int) error {
 		return err
 	}
 	return nil
+}
+
+func GetBrands() ([]domain.Brand, error) {
+	brands, err := repository.GetBrands()
+	if err != nil {
+		return nil, err
+	}
+	return brands, nil
+
+}
+
+func GetBrandsUser() ([]domain.Brand, error) {
+	brands, err := repository.GetBrandsUser()
+	if err != nil {
+		return nil, err
+	}
+	return brands, nil
 }
 
 // Product Management------------------------------------------------------------------------------
@@ -106,16 +139,16 @@ func GetProductByID(id int) (*domain.Product, error) {
 	return product, nil
 }
 
-func GetProductByBrandID(limit, offset, id int) ([]domain.Product, error) {
-	product, err := repository.GetProductByBrandID(limit, offset, id)
+func GetProductByName(name string) (*domain.Product, error) {
+	product, err := repository.GetProductByName(name)
 	if err != nil {
 		return nil, err
 	}
 	return product, nil
 }
 
-func GetProductByName(name string) (*domain.Product, error) {
-	product, err := repository.GetProductByName(name)
+func GetProductByBrandID(limit, offset, id int) ([]domain.Product, error) {
+	product, err := repository.GetProductByBrandID(limit, offset, id)
 	if err != nil {
 		return nil, err
 	}
@@ -126,6 +159,37 @@ func GetProductCategoryID(limit, offset, id int) ([]domain.Product, error) {
 	product, err := repository.GetProductByCategoryID(limit, offset, id)
 	if err != nil {
 		return nil, err
+	}
+	return product, nil
+}
+
+func GetProductByBrandName(name string) ([]domain.Product, error) {
+	id, _ := repository.GetBrandIdByBrandName(name)
+
+	if id == 0 {
+		return nil, errors.New("Brand not exist")
+	}
+	products, err := repository.GetProductByBrandName(id)
+	if err != nil {
+		return nil, err
+	}
+	if len(products) == 0 {
+		return nil, errors.New("No Products")
+	}
+	return products, nil
+}
+
+func GetProductByCategoryName(name string) ([]domain.Product, error) {
+	id, _ := repository.GetCategoryIDByCategoryName(name)
+	if id == 0 {
+		return nil, errors.New("Category not exist")
+	}
+	product, err := repository.GetProductByCategoryName(id)
+	if err != nil {
+		return nil, err
+	}
+	if len(product) == 0 {
+		return nil, errors.New("No Products")
 	}
 	return product, nil
 }

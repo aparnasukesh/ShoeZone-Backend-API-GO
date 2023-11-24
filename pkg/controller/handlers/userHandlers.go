@@ -253,6 +253,75 @@ func GetProductByCategoryID(ctx *gin.Context) {
 	})
 }
 
-func GetProductByBrandName(ctx *gin.Context) {
+func GetBrandsUser(ctx *gin.Context) {
+	brands, err := usecase.GetBrandsUser()
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Brands not found",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success": true,
+		"Message": "Brands found",
+		"Error":   nil,
+		"Brands":  brands,
+	})
+}
 
+func GetCategoriesUser(ctx *gin.Context) {
+	categories, err := usecase.GetCategoriesUser()
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Brands not found",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success": true,
+		"Message": "Brands found",
+		"Error":   nil,
+		"Brands":  categories,
+	})
+}
+
+func GetProductByBrandName(ctx *gin.Context) {
+	name := ctx.DefaultQuery("name", "")
+	product, err := usecase.GetProductByBrandName(name)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Product not found",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success":  true,
+		"Message":  "Product found successfull",
+		"Products": product,
+	})
+}
+
+func GetProductByCategoryName(ctx *gin.Context) {
+	name := ctx.DefaultQuery("name", "")
+	product, err := usecase.GetProductByCategoryName(name)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Product Not  found",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success":  true,
+		"Message":  "Product found successfull",
+		"Error":    nil,
+		"Products": product,
+	})
 }

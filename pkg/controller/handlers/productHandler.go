@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Category Handlers---------------------------------------------------------------------------
+// Admin- Category Handlers---------------------------------------------------------------------------
 func AddCategories(ctx *gin.Context) {
 	category := domain.Category{}
 
@@ -103,7 +103,25 @@ func DeleteCategory(ctx *gin.Context) {
 	})
 }
 
-// Brand Handlers---------------------------------------------------------------------------------
+func GetCategories(ctx *gin.Context) {
+	categories, err := usecase.GetCategories()
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "No categories found",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success":    true,
+		"Message":    "Category deatils",
+		"Error":      nil,
+		"Categories": categories,
+	})
+}
+
+// Admin-Brand Handlers---------------------------------------------------------------------------------
 
 func AddBrand(ctx *gin.Context) {
 	newBrand := domain.Brand{}
@@ -202,7 +220,26 @@ func DeleteBrand(ctx *gin.Context) {
 	})
 }
 
-// Product Handlers--------------------------------------------------------------------------------
+func GetBrands(ctx *gin.Context) {
+	brands, err := usecase.GetBrands()
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Brands not found",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success":       true,
+		"Message":       "Brand Details",
+		"Error":         nil,
+		"Brand Details": brands,
+	})
+
+}
+
+// Admin-Product Handlers--------------------------------------------------------------------------------
 func AddProduct(ctx *gin.Context) {
 
 	productData := domain.Product{}

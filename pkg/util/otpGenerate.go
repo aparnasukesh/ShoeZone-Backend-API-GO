@@ -34,8 +34,6 @@ func Otpgeneration(emails string) string {
 	// Settings for SMTP server
 	d := gomail.NewDialer("smtp.gmail.com", 587, os.Getenv("EMAIL"), os.Getenv("PASSWORD"))
 
-	// This is only needed when SSL/TLS certificate is not valid on server.
-	// In production this should be set to false.
 	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 
 	// Now send E-Mail
