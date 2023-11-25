@@ -1,7 +1,9 @@
 package util
 
 import (
+	"errors"
 	"fmt"
+
 	"os"
 	"time"
 
@@ -58,4 +60,18 @@ func GetRole(token *jwt.Token) (interface{}, error) {
 	claims, _ := token.Claims.(jwt.MapClaims)
 	role := claims["role"]
 	return role, nil
+}
+
+func GetUserID(token *jwt.Token) (int, error) {
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return 0, errors.New("invalid token claims type")
+	}
+
+	userID, ok := claims["userid"].(float64)
+	if !ok {
+		return 0, errors.New("user ID not found or not a number in claims")
+	}
+
+	return int(userID), nil
 }

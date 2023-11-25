@@ -2,9 +2,11 @@ package usecase
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/aparnasukesh/shoezone/pkg/domain"
 	"github.com/aparnasukesh/shoezone/pkg/repository"
+	"github.com/aparnasukesh/shoezone/pkg/util"
 )
 
 // Category Management----------------------------------------------------------------------------
@@ -152,6 +154,9 @@ func GetProductByBrandID(limit, offset, id int) ([]domain.Product, error) {
 	if err != nil {
 		return nil, err
 	}
+	if len(product) == 0 {
+		return nil, errors.New("No Products")
+	}
 	return product, nil
 }
 
@@ -159,6 +164,9 @@ func GetProductCategoryID(limit, offset, id int) ([]domain.Product, error) {
 	product, err := repository.GetProductByCategoryID(limit, offset, id)
 	if err != nil {
 		return nil, err
+	}
+	if len(product) == 0 {
+		return nil, errors.New("No Products")
 	}
 	return product, nil
 }
@@ -192,4 +200,29 @@ func GetProductByCategoryName(name string) ([]domain.Product, error) {
 		return nil, errors.New("No Products")
 	}
 	return product, nil
+}
+
+func GetUserIDFromToken(authorization string) (int, error) {
+	tokenParts := strings.Split(authorization, "Bearer ")
+	token, err := util.VerifyJWT(tokenParts[1])
+	if err != nil {
+		return 0, err
+	}
+	userID, err := util.GetUserID(token)
+	if err != nil {
+		return 0, err
+	}
+	return userID, nil
+}
+
+func AddToCart(cartProduct *domain.Cart, id int) error {
+	res, err := repository.CheckProductQuantity(cartProduct)
+	if res == false || err != nil {
+		return err
+	}
+	err = repository.AddToCart(cartProduct, id)
+	if err != nil {
+		return err
+	}
+	return nil
 }

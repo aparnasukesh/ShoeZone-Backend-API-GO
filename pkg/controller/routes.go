@@ -14,18 +14,25 @@ func Routes(r *gin.Engine) {
 		userGroup.POST("/register/validate", handler.RegisterValidate)
 		userGroup.POST("/login", handler.UserLogin)
 
-		userGroup.GET("/product", handler.GetProducts)
+		userGroup.GET("/products", handler.GetProducts)
 		userGroup.GET("/product/:id", handler.GetProductByID)
-		userGroup.GET("/product/productname", handler.GetProductByName)
+		userGroup.GET("/product", handler.GetProductByName)
 
 		userGroup.GET("/brands", handler.GetBrandsUser)
-		userGroup.GET("/product/brand", handler.GetProductByBrandID)
-		userGroup.GET("/product/brandname", handler.GetProductByBrandName)
+		userGroup.GET("/product/brand/:id", handler.GetProductByBrandID)
+		userGroup.GET("/product/brand", handler.GetProductByBrandName)
 
 		userGroup.GET("/categories", handler.GetCategoriesUser)
-		userGroup.GET("/product/category", handler.GetProductByCategoryID)
-		userGroup.GET("/product/categoryname", handler.GetProductByCategoryName)
+		userGroup.GET("/product/category/:id", handler.GetProductByCategoryID)
+		userGroup.GET("/product/category", handler.GetProductByCategoryName)
 
+	}
+
+	userAuthGroup := r.Group("/user")
+	{
+		userAuthGroup.Use(handler.UserAuthRequired)
+
+		userAuthGroup.POST("/cart", handler.AddToCart)
 	}
 
 	adminGroup := r.Group("/admin")
