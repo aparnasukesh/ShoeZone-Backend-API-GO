@@ -25,7 +25,7 @@ func RegisterUser(ctx *gin.Context) {
 
 	err := usecase.RegisterUser(&userData)
 	if err != nil {
-		ctx.JSON(http.StatusNotFound, gin.H{
+		ctx.JSON(http.StatusBadRequest, gin.H{
 			"Success": false,
 			"Message": "Registering the User Failed",
 			"Error":   err.Error(),
@@ -54,7 +54,7 @@ func RegisterValidate(ctx *gin.Context) {
 	}
 	err := usecase.RegisterValidate(&userData)
 	if err != nil {
-		ctx.JSON(http.StatusNotFound, gin.H{
+		ctx.JSON(http.StatusBadRequest, gin.H{
 			"Succes":  false,
 			"Message": "Register validate Error",
 			"Error":   err.Error(),
@@ -91,7 +91,7 @@ func UserLogin(ctx *gin.Context) {
 
 	token, err := util.GenerateJWT(*res)
 	if err != nil {
-		ctx.JSON(http.StatusNotFound, gin.H{
+		ctx.JSON(http.StatusBadRequest, gin.H{
 			"Success": false,
 			"Message": "Login failed",
 			"Error":   err.Error(),
@@ -114,7 +114,7 @@ func GetProducts(ctx *gin.Context) {
 	limitStr := ctx.DefaultQuery("limit", "0")
 	pageNum, err := strconv.Atoi(pageStr)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
+		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"Success": false,
 			"Message": "List Products failed",
 			"Error":   err.Error(),
@@ -126,7 +126,7 @@ func GetProducts(ctx *gin.Context) {
 	offset := pageNum * limitNum
 	products, err := usecase.GetProducts(limitNum, offset)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
+		ctx.JSON(http.StatusNotFound, gin.H{
 			"Success": false,
 			"Message": "List products failed",
 			"Error":   err.Error(),
@@ -145,7 +145,7 @@ func GetProductByID(ctx *gin.Context) {
 	idStr := ctx.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
+		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"Success": false,
 			"Message": "No product found",
 			"Error":   err.Error(),
@@ -154,7 +154,7 @@ func GetProductByID(ctx *gin.Context) {
 	}
 	product, err := usecase.GetProductByID(id)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
+		ctx.JSON(http.StatusNotFound, gin.H{
 			"Success": false,
 			"Message": "No product found",
 			"Error":   err.Error(),
@@ -170,13 +170,13 @@ func GetProductByID(ctx *gin.Context) {
 }
 
 func GetProductByBrandID(ctx *gin.Context) {
-	idStr := ctx.DefaultQuery("id", "0")
+	idStr := ctx.Param("id")
 	limitStr := ctx.DefaultQuery("limit", "0")
 	pageStr := ctx.DefaultQuery("page", "0")
 
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
+		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"Success": false,
 			"Message": "No product found",
 			"Error":   err.Error(),
@@ -190,7 +190,7 @@ func GetProductByBrandID(ctx *gin.Context) {
 	products, err := usecase.GetProductByBrandID(limit, offset, id)
 
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
+		ctx.JSON(http.StatusNotFound, gin.H{
 			"Success": false,
 			"Message": "Products not found",
 			"Error":   err.Error(),
@@ -199,7 +199,7 @@ func GetProductByBrandID(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, gin.H{
 		"Success":  true,
-		"Message":  "Products Details",
+		"Message":  "Product found Successfull",
 		"Error":    nil,
 		"Products": products,
 	})
@@ -210,7 +210,7 @@ func GetProductByName(ctx *gin.Context) {
 
 	product, err := usecase.GetProductByName(name)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
+		ctx.JSON(http.StatusNotFound, gin.H{
 			"Success": false,
 			"Message": "Product not found",
 			"Error":   err.Error(),
@@ -226,7 +226,7 @@ func GetProductByName(ctx *gin.Context) {
 }
 
 func GetProductByCategoryID(ctx *gin.Context) {
-	idStr := ctx.DefaultQuery("id", "0")
+	idStr := ctx.Param("id")
 	limitStr := ctx.DefaultQuery("limit", "0")
 	pageStr := ctx.DefaultQuery("page", "0")
 
@@ -238,7 +238,7 @@ func GetProductByCategoryID(ctx *gin.Context) {
 	product, err := usecase.GetProductCategoryID(limit, offset, id)
 
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
+		ctx.JSON(http.StatusNotFound, gin.H{
 			"Success": false,
 			"Message": "Product not found",
 			"Error":   err.Error(),
@@ -256,7 +256,7 @@ func GetProductByCategoryID(ctx *gin.Context) {
 func GetBrandsUser(ctx *gin.Context) {
 	brands, err := usecase.GetBrandsUser()
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
+		ctx.JSON(http.StatusNotFound, gin.H{
 			"Success": false,
 			"Message": "Brands not found",
 			"Error":   err.Error(),
@@ -274,7 +274,7 @@ func GetBrandsUser(ctx *gin.Context) {
 func GetCategoriesUser(ctx *gin.Context) {
 	categories, err := usecase.GetCategoriesUser()
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
+		ctx.JSON(http.StatusNotFound, gin.H{
 			"Success": false,
 			"Message": "Brands not found",
 			"Error":   err.Error(),
@@ -293,7 +293,7 @@ func GetProductByBrandName(ctx *gin.Context) {
 	name := ctx.DefaultQuery("name", "")
 	product, err := usecase.GetProductByBrandName(name)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
+		ctx.JSON(http.StatusNotFound, gin.H{
 			"Success": false,
 			"Message": "Product not found",
 			"Error":   err.Error(),
@@ -311,7 +311,7 @@ func GetProductByCategoryName(ctx *gin.Context) {
 	name := ctx.DefaultQuery("name", "")
 	product, err := usecase.GetProductByCategoryName(name)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
+		ctx.JSON(http.StatusNotFound, gin.H{
 			"Success": false,
 			"Message": "Product Not  found",
 			"Error":   err.Error(),
@@ -324,4 +324,51 @@ func GetProductByCategoryName(ctx *gin.Context) {
 		"Error":    nil,
 		"Products": product,
 	})
+}
+
+// User-Carts----------------------------------------------------------------------------------------------
+func AddToCart(ctx *gin.Context) {
+
+	authorization := ctx.Request.Header.Get("Authorization")
+	id, err := usecase.GetUserIDFromToken(authorization)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Product add to cart failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+
+	cartProduct := domain.Cart{}
+
+	if err := ctx.ShouldBindJSON(&cartProduct); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Bindin Error",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	err = usecase.AddToCart(&cartProduct, id)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Product add to cart failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusCreated, gin.H{
+		"success": true,
+		"Message": "Product added to cart successfully",
+		"Error":   nil,
+		"CartProduct": gin.H{
+			"ID":        cartProduct.ID,
+			"UserID":    cartProduct.UserID,
+			"ProductID": cartProduct.ProductID,
+			"Quantity":  cartProduct.Quantity,
+		},
+	})
+
 }

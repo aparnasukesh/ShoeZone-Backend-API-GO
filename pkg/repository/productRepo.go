@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"errors"
+
 	"github.com/aparnasukesh/shoezone/pkg/db"
 	"github.com/aparnasukesh/shoezone/pkg/domain"
 	"gorm.io/gorm"
@@ -212,4 +214,38 @@ func GetProductByCategoryName(id int) ([]domain.Product, error) {
 		return nil, err
 	}
 	return product, nil
+}
+
+func CheckProductQuantity(cartProduct *domain.Cart) (bool, error) {
+	product := domain.Product{}
+	if err := db.DB.Where("id=?", cartProduct.ProductID).First(&product).Error; err != nil {
+		return false, err
+	}
+	if cartProduct.Quantity <= product.StockQuantity {
+		return true, nil
+	}
+	return false, errors.New("Out of stock")
+}
+func AddToCart(cartProduct *domain.Cart, id int) error {
+	res := db.DB.Where("user_id = ? AND product_id = ?", id, cartProduct.ProductID).First(&cartProduct)
+
+	if res.Error != nil {
+		if res.Error == gorm.ErrRecordNotFound {
+			cartProduct.UserID = id
+			result := db.DB.Create(&cartProduct)
+			if result.Error != nil {
+				return result.Error
+			}
+		} else {
+			return res.Error
+		}
+	} else {
+		cartProduct.Quantity += cartProduct.Quantity
+		result := db.DB.Save(&cartProduct)
+		if result.Error != nil {
+			return result.Error
+		}
+	}
+
+	return nil
 }

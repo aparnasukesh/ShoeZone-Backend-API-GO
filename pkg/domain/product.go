@@ -23,3 +23,12 @@ type Brand struct {
 	gorm.Model
 	BrandName string `json:"brand_name" validate:"required,max=24"`
 }
+
+type Cart struct {
+	gorm.Model
+	UserID      int     `json:"user_id"`
+	ProductID   int     `json:"product_id"`
+	Quantity    int     `json:"quantity"`
+	CartUser    User    `gorm:"foreignkey:UserID"`
+	CartProduct Product `gorm:"foreignkey:ProductID"`
+}

@@ -43,7 +43,7 @@ func UpdateCategory(ctx *gin.Context) {
 	idstr := ctx.Param("id")
 	id, err := strconv.Atoi(idstr)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
+		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"Success": false,
 			"Message": "Category update failed",
 			"Error":   err.Error(),
@@ -80,7 +80,7 @@ func DeleteCategory(ctx *gin.Context) {
 	idStr := ctx.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
+		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"Success": false,
 			"Message": "Detele category failed",
 			"Error":   err.Error(),
@@ -106,7 +106,7 @@ func DeleteCategory(ctx *gin.Context) {
 func GetCategories(ctx *gin.Context) {
 	categories, err := usecase.GetCategories()
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
+		ctx.JSON(http.StatusNotFound, gin.H{
 			"Success": false,
 			"Message": "No categories found",
 			"Error":   err.Error(),
@@ -156,7 +156,7 @@ func UpdateBrand(ctx *gin.Context) {
 	idStr := ctx.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
+		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"Success": false,
 			"Message": "Brand Update failed",
 			"Error":   err.Error(),
@@ -191,12 +191,11 @@ func UpdateBrand(ctx *gin.Context) {
 }
 
 func DeleteBrand(ctx *gin.Context) {
-	//brandData := domain.Brand{}
 
 	idStr := ctx.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
+		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"Success": false,
 			"Message": "Delete brand failed",
 			"Error":   err.Error(),
@@ -223,7 +222,7 @@ func DeleteBrand(ctx *gin.Context) {
 func GetBrands(ctx *gin.Context) {
 	brands, err := usecase.GetBrands()
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
+		ctx.JSON(http.StatusNotFound, gin.H{
 			"Success": false,
 			"Message": "Brands not found",
 			"Error":   err.Error(),
@@ -275,7 +274,7 @@ func UpdateProduct(ctx *gin.Context) {
 	idStr := ctx.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
+		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"Success": false,
 			"Message": "Product Update failed",
 			"Error":   err.Error(),
@@ -312,7 +311,7 @@ func DeleteProduct(ctx *gin.Context) {
 	idStr := ctx.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
+		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"Success": false,
 			"Message": "Product delete failed",
 			"Error":   err.Error(),
