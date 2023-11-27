@@ -33,6 +33,12 @@ func Routes(r *gin.Engine) {
 		userAuthGroup.Use(handler.UserAuthRequired)
 
 		userAuthGroup.POST("/cart", handler.AddToCart)
+		userAuthGroup.GET("/cart", handler.CartList)
+		userAuthGroup.DELETE("/cart/:id", handler.DeleteCartItem)
+
+		userAuthGroup.POST("/address", handler.AddAddress)
+		userAuthGroup.PATCH("/profile", handler.EditUserProfile)
+		userAuthGroup.GET("/profile/:id", handler.ProfileDetails)
 	}
 
 	adminGroup := r.Group("/admin")

@@ -116,5 +116,32 @@ func UnblockUser(id int) error {
 		return err
 	}
 	return nil
+}
 
+// User- Address-----------------------------------------------------------------------------------------------
+
+func AddAddress(userAdd *domain.Address, id int) error {
+	err := repository.AddAddress(userAdd, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func EditUserProfile(user domain.UserProfileUpdate, id int) error {
+	user.Password = util.HashPassword(user.Password)
+	err := repository.EditUserProfile(user, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func ProfileDetails(id int) (*domain.UserProfileUpdate, error) {
+	userDetails, err := repository.ProfileDetails(id)
+	if err != nil {
+		return nil, err
+	}
+	return userDetails, nil
 }

@@ -91,3 +91,21 @@ func UnblockUser(id int) error {
 	return nil
 
 }
+func EditUserProfile(updateuser domain.UserProfileUpdate, id int) error {
+	db.DB.Set("gorm:association_autoupdate", false).Set("gorm:association_autocreate", false)
+
+	result := db.DB.Model(&domain.User{}).Where("id = ?", id).Updates(updateuser)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
+func ProfileDetails(id int) (*domain.UserProfileUpdate, error) {
+	userDetails := domain.UserProfileUpdate{}
+	if err := db.DB.Model(&domain.User{}).Where("id=?", id).Preload("DefaultAddress").First(&userDetails).Error; err != nil {
+		return nil, err
+	}
+	return &userDetails, nil
+}

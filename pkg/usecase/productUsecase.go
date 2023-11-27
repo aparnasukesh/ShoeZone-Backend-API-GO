@@ -226,3 +226,22 @@ func AddToCart(cartProduct *domain.Cart, id int) error {
 	}
 	return nil
 }
+
+func CartList(id int) ([]domain.CartResponse, error) {
+	resPonse := []domain.CartResponse{}
+	cartProducts, err := repository.CartList(id)
+	if err != nil {
+		return nil, err
+	}
+
+	util.CreateCartResponse(&resPonse, cartProducts)
+	return resPonse, nil
+}
+
+func DeleteCartItem(id, productID int) error {
+	err := repository.DeleteCartItem(id, productID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
