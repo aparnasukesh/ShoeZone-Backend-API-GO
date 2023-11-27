@@ -1,6 +1,10 @@
 package domain
 
-import "gorm.io/gorm"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type Product struct {
 	gorm.Model
@@ -31,4 +35,14 @@ type Cart struct {
 	Quantity    int     `json:"quantity"`
 	CartUser    User    `gorm:"foreignkey:UserID"`
 	CartProduct Product `gorm:"foreignkey:ProductID"`
+}
+
+type CartResponse struct {
+	ID        uint       `json:"id"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
+	DeletedAt *time.Time `json:"deleted_at,omitempty"`
+	UserID    int        `json:"user_id"`
+	ProductID int        `json:"product_id"`
+	Quantity  int        `json:"quantity"`
 }

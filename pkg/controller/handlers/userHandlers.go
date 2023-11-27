@@ -372,3 +372,181 @@ func AddToCart(ctx *gin.Context) {
 	})
 
 }
+
+func CartList(ctx *gin.Context) {
+
+	authorization := ctx.Request.Header.Get("Authorization")
+	id, err := usecase.GetUserIDFromToken(authorization)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "No products found",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	cartProduct, err := usecase.CartList(id)
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"Success": false,
+			"Message": "Products not found",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusFound, gin.H{
+		"Success":   true,
+		"Message":   "Product Successfully found",
+		"Error":     nil,
+		"Cart List": cartProduct,
+	})
+}
+func DeleteCartItem(ctx *gin.Context) {
+	authorization := ctx.Request.Header.Get("Authorization")
+	id, err := usecase.GetUserIDFromToken(authorization)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Failed to remove cart item",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	productIdstr := ctx.Param("id")
+	productID, err := strconv.Atoi(productIdstr)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Failed to remove cart item",
+			"Error":   err.Error(),
+		})
+		return
+	}
+
+	err = usecase.DeleteCartItem(id, productID)
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"Success": false,
+			"Message": "Failed to remove cart item",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success": true,
+		"Message": "Item Successfully deleted from the cart",
+		"Error":   nil,
+	})
+}
+
+func AddAddress(ctx *gin.Context) {
+	authorization := ctx.Request.Header.Get("Authorization")
+	id, err := usecase.GetUserIDFromToken(authorization)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Add Address failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	userAdd := domain.Address{}
+	if err := ctx.ShouldBindJSON(&userAdd); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Bindin Error",
+			"Error":   err.Error(),
+		})
+		return
+	}
+
+	err = usecase.AddAddress(&userAdd, id)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Add Address failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusCreated, gin.H{
+		"Success": true,
+		"Message": "Address successfully added",
+		"Error":   nil,
+		"Address": gin.H{
+			"Id":       userAdd.ID,
+			"UserID":   userAdd.UserID,
+			"Street":   userAdd.Street,
+			"City":     userAdd.City,
+			"Pin Code": userAdd.PINCode,
+			"State":    userAdd.State,
+			"Country":  userAdd.Country,
+		},
+	})
+}
+
+func EditUserProfile(ctx *gin.Context) {
+	authorization := ctx.Request.Header.Get("Authorization")
+	id, err := usecase.GetUserIDFromToken(authorization)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Update user profile failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	user := domain.UserProfileUpdate{}
+	if err := ctx.ShouldBindJSON(&user); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Binding error",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	err = usecase.EditUserProfile(user, id)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Update user profile failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success":         true,
+		"Message":         "User profile updated successfully",
+		"Error":           nil,
+		"Updated profile": user,
+	})
+}
+
+func ProfileDetails(ctx *gin.Context) {
+	authorization := ctx.Request.Header.Get("Authorization")
+	id, err := usecase.GetUserIDFromToken(authorization)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Fetching user profile details failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	userDetails, err := usecase.ProfileDetails(id)
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"Success": false,
+			"Message": "Details not found",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success":         true,
+		"Message":         "User profile details found successfully",
+		"Error":           nil,
+		"Profile Details": userDetails,
+	})
+}

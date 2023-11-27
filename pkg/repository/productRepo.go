@@ -249,3 +249,28 @@ func AddToCart(cartProduct *domain.Cart, id int) error {
 
 	return nil
 }
+
+func CartList(id int) ([]domain.Cart, error) {
+	cartProducts := []domain.Cart{}
+	if err := db.DB.Where("user_id=?", id).Find(&cartProducts).Error; err != nil {
+		return nil, err
+	}
+	return cartProducts, nil
+
+}
+
+func DeleteCartItem(id, productID int) error {
+	cartProduct := domain.Cart{}
+	if err := db.DB.Where("user_id= ? AND product_id=?", id, productID).Delete(&cartProduct).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func AddAddress(userAdd *domain.Address, id int) error {
+	userAdd.UserID = id
+	if err := db.DB.Create(&userAdd).Error; err != nil {
+		return err
+	}
+	return nil
+}
