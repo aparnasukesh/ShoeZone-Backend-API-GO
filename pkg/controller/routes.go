@@ -37,8 +37,13 @@ func Routes(r *gin.Engine) {
 		userAuthGroup.DELETE("/cart/:id", handler.DeleteCartItem)
 
 		userAuthGroup.POST("/address", handler.AddAddress)
+		userAuthGroup.GET("/address", handler.ViewAddress)
+
 		userAuthGroup.PATCH("/profile", handler.EditUserProfile)
 		userAuthGroup.GET("/profile/:id", handler.ProfileDetails)
+
+		userAuthGroup.GET("/ordersummary", handler.OrderSummary)
+
 	}
 
 	adminGroup := r.Group("/admin")

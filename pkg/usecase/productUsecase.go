@@ -245,3 +245,15 @@ func DeleteCartItem(id, productID int) error {
 	}
 	return nil
 }
+
+func GetOrderSummary(userID int) (domain.OrderSummary, error) {
+	userCartDetails, err := repository.GetCartDetails(userID)
+	if err != nil {
+		return domain.OrderSummary{}, err
+	}
+
+	orderSummary := util.BuildOrderSummary(userCartDetails)
+	orderSummary.UserID = userID
+
+	return orderSummary, nil
+}

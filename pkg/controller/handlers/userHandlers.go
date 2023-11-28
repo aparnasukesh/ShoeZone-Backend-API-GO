@@ -439,6 +439,7 @@ func DeleteCartItem(ctx *gin.Context) {
 	})
 }
 
+// User - Profile--------------------------------------------------------------------------------------------------
 func AddAddress(ctx *gin.Context) {
 	authorization := ctx.Request.Header.Get("Authorization")
 	id, err := usecase.GetUserIDFromToken(authorization)
@@ -548,5 +549,61 @@ func ProfileDetails(ctx *gin.Context) {
 		"Message":         "User profile details found successfully",
 		"Error":           nil,
 		"Profile Details": userDetails,
+	})
+}
+
+func ViewAddress(ctx *gin.Context) {
+	authorization := ctx.Request.Header.Get("Authorization")
+	id, err := usecase.GetUserIDFromToken(authorization)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "View Address failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	userAdd, err := usecase.ViewAddress(id)
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"Success": false,
+			"Message": "View Address failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success":              true,
+		"Message":              "Address found successfully",
+		"Error":                nil,
+		"User Address Details": userAdd,
+	})
+}
+
+func OrderSummary(ctx *gin.Context) {
+	authorization := ctx.Request.Header.Get("Authorization")
+	id, err := usecase.GetUserIDFromToken(authorization)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "View Order Summary failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	res, err := usecase.GetOrderSummary(id)
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"Success": false,
+			"Message": "Found Order Summary failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success":       true,
+		"Message":       "Found Order summary succeefull",
+		"Error":         nil,
+		"Order Summary": res,
 	})
 }

@@ -109,3 +109,11 @@ func ProfileDetails(id int) (*domain.UserProfileUpdate, error) {
 	}
 	return &userDetails, nil
 }
+
+func ViewAddress(id int) ([]domain.Address, error) {
+	userAdd := []domain.Address{}
+	if err := db.DB.Where("user_id=?", id).Find(&userAdd).Error; err != nil {
+		return nil, err
+	}
+	return userAdd, nil
+}
