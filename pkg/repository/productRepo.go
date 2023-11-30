@@ -274,41 +274,83 @@ func AddAddress(userAdd *domain.Address, id int) error {
 	}
 	return nil
 }
-func GetPricesAndQuantities(productIDs []int, userID int) ([]int, []float64, error) {
-	quantities := make([]int, len(productIDs))
-	prices := make([]float64, len(productIDs))
-
-	var cartProducts []domain.Cart
-	if err := db.DB.Where("user_id=? AND product_id IN (?)", userID, productIDs).Preload("CartProduct").Find(&cartProducts).Error; err != nil {
-		return nil, nil, err
-	}
-
-	for i, cartProduct := range cartProducts {
-		quantities[i] = cartProduct.Quantity
-		prices[i] = cartProduct.CartProduct.Price
-	}
-
-	return quantities, prices, nil
-}
-
-func GetProductIDFromCart(userId int) ([]int, error) {
-	cartProduct := []domain.Cart{}
-	cartproduct := make([]int, len(cartProduct))
-	if err := db.DB.Where("user_id=?", userId).Find(&cartProduct).Error; err != nil {
-		return nil, err
-	}
-	for _, val := range cartProduct {
-		cartproduct = append(cartproduct, val.ProductID)
-	}
-	return cartproduct, nil
-}
 
 func GetCartDetails(userID int) ([]domain.Cart, error) {
 	var userCartDetails []domain.Cart
 	res := db.DB.Where("user_id = ?", userID).Preload("CartProduct").Find(&userCartDetails)
 	if res.Error != nil {
-		return nil, errors.New("database fetching error")
+		return nil, res.Error
+	}
+	if len(userCartDetails) < 1 {
+		return nil, errors.New("No Products In The Cart")
+	}
+	return userCartDetails, nil
+}
+
+func OrderItem(orderItems []domain.OrderItem) error {
+
+	for _, orderItem := range orderItems {
+		if err := db.DB.Preload("Product").Create(&orderItem).Error; err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func GetOrderItemByUserIdAndOrderId(userId, orderId uint) (uint, error) {
+
+	orderItems := domain.OrderItem{}
+	if err := db.DB.Where("user_id=? AND order_id=?", userId, orderId).First(&orderItems).Error; err != nil {
+		return 0, err
+	}
+	return orderItems.ID, nil
+}
+
+func Order(order domain.Order) error {
+
+	if err := db.DB.Preload("OrderItems").Preload("Address").Create(&order).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func DeleteCartItemByUSerID(userId uint) error {
+	cartItem := domain.Cart{}
+	if err := db.DB.Where("user_id= ? ", userId).Delete(&cartItem).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func GetProductIDsFromCart(cartItem []domain.Cart) ([]int, []int) {
+	var productIds []int
+	var quantities []int
+
+	for _, id := range cartItem {
+		productIds = append(productIds, id.ProductID)
+		quantities = append(quantities, id.Quantity)
+	}
+	return productIds, quantities
+}
+func UpdateProductStockQuantity(productIDs, quantities []int) error {
+	products := []domain.Product{}
+
+	if err := db.DB.Where("id IN (?)", productIDs).Find(&products).Error; err != nil {
+		return err
 	}
 
-	return userCartDetails, nil
+	if len(products) != len(quantities) {
+		return errors.New("lengths of productIDs and quantities are different")
+	}
+
+	for i := range products {
+
+		products[i].StockQuantity = products[i].StockQuantity - quantities[i]
+
+		if err := db.DB.Save(&products[i]).Error; err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

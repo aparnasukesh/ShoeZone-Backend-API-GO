@@ -35,5 +35,4 @@ func DbConnect() {
 	DB.AutoMigrate(&domain.Address{})
 	DB.AutoMigrate(&domain.Order{})
 	DB.AutoMigrate(&domain.OrderItem{})
-
 }

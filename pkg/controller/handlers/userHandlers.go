@@ -607,3 +607,30 @@ func OrderSummary(ctx *gin.Context) {
 		"Order Summary": res,
 	})
 }
+
+func OrderItem(ctx *gin.Context) {
+	authorization := ctx.Request.Header.Get("Authorization")
+	id, err := usecase.GetUserIDFromToken(authorization)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Order failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	err = usecase.OrderItem(id)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Order failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success": true,
+		"Message": "Order Successfull",
+		"Error":   nil,
+	})
+}

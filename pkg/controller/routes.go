@@ -43,6 +43,7 @@ func Routes(r *gin.Engine) {
 		userAuthGroup.GET("/profile/:id", handler.ProfileDetails)
 
 		userAuthGroup.GET("/ordersummary", handler.OrderSummary)
+		userAuthGroup.POST("/orderitem", handler.OrderItem)
 
 	}
 
