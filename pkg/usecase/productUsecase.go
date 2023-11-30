@@ -245,3 +245,63 @@ func DeleteCartItem(id, productID int) error {
 	}
 	return nil
 }
+
+func GetOrderSummary(userID int) (domain.OrderSummary, error) {
+	userCartDetails, err := repository.GetCartDetails(userID)
+	if err != nil {
+		return domain.OrderSummary{}, err
+	}
+
+	orderSummary := util.BuildOrderSummary(userCartDetails)
+	orderSummary.UserID = userID
+
+	return orderSummary, nil
+}
+
+func OrderItem(userId int) error {
+	userCartDetails, err := repository.GetCartDetails(userId)
+	if err != nil {
+		return err
+	}
+
+	orderItem, orderId, err := util.BuildOrderItem(userCartDetails, userId)
+	if err != nil {
+		return err
+	}
+
+	err = repository.OrderItem(orderItem)
+	if err != nil {
+		return err
+	}
+	user, err := repository.GetUserByID(userId)
+	if err != nil {
+		return err
+	}
+
+	orderID, err := repository.GetOrderItemByUserIdAndOrderId(uint(userId), orderId)
+	if err != nil {
+		return nil
+	}
+	order := util.BuildOrder(orderItem, *user, orderID, orderId)
+
+	err = repository.Order(order)
+	if err != nil {
+		return err
+	}
+	productIDs, quantities := repository.GetProductIDsFromCart(userCartDetails)
+
+	err = repository.UpdateProductStockQuantity(productIDs, quantities)
+	if err != nil {
+		return err
+	}
+
+	//util.UpdateProductStockQuantity(userCartDetails)
+
+	err = repository.DeleteCartItemByUSerID(uint(userId))
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}

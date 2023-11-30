@@ -46,7 +46,7 @@ func GetUsers() (*[]domain.User, error) {
 }
 func GetUserByID(id int) (*domain.User, error) {
 	userData := domain.User{}
-	res := db.DB.Table("users").Select("id,created_at,updated_at,deleted_at,username,email,phone,isverified,isadmin,dateofbirth,gender").Where("id= ?", id).First(&userData)
+	res := db.DB.Table("users").Select("id,created_at,updated_at,deleted_at,username,email,phone,isverified,isadmin,dateofbirth,gender,default_address_id").Where("id= ?", id).First(&userData)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -108,4 +108,12 @@ func ProfileDetails(id int) (*domain.UserProfileUpdate, error) {
 		return nil, err
 	}
 	return &userDetails, nil
+}
+
+func ViewAddress(id int) ([]domain.Address, error) {
+	userAdd := []domain.Address{}
+	if err := db.DB.Where("user_id=?", id).Find(&userAdd).Error; err != nil {
+		return nil, err
+	}
+	return userAdd, nil
 }
