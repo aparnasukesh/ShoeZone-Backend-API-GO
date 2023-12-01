@@ -44,6 +44,8 @@ func Routes(r *gin.Engine) {
 
 		userAuthGroup.GET("/ordersummary", handler.OrderSummary)
 		userAuthGroup.POST("/orderitem", handler.OrderItem)
+		userAuthGroup.GET("/orders", handler.ViewOrders)
+		userAuthGroup.GET("/order/orderid", handler.ViewOrdersByID)
 
 	}
 
@@ -74,6 +76,9 @@ func Routes(r *gin.Engine) {
 		adminGroup.POST("/product", handler.AddProduct)
 		adminGroup.PUT("/product/:id", handler.UpdateProduct)
 		adminGroup.DELETE("/product/:id", handler.DeleteProduct)
+
+		adminGroup.GET("/orders/:id", handler.ViewOrdersByUserID)
+		adminGroup.GET("/orders/orderid/:id", handler.ViewOrderItemsByUserID)
 
 	}
 

@@ -634,3 +634,137 @@ func OrderItem(ctx *gin.Context) {
 		"Error":   nil,
 	})
 }
+
+func ViewOrders(ctx *gin.Context) {
+	authorization := ctx.Request.Header.Get("Authorization")
+	id, err := usecase.GetUserIDFromToken(authorization)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "View Orders Failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+
+	orders, err := usecase.ViewOrders(id)
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"Success": false,
+			"Message": "View orders failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success": true,
+		"Message": "View orders successfull",
+		"Error":   nil,
+		"Orders":  orders,
+	})
+}
+
+func ViewOrdersByID(ctx *gin.Context) {
+	authorization := ctx.Request.Header.Get("Authorization")
+	id, err := usecase.GetUserIDFromToken(authorization)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "View Order falied",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	orderIdStr := ctx.DefaultQuery("booking_id", "0")
+	orderId, err := strconv.Atoi(orderIdStr)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "View Order Failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	orders, err := usecase.ViewOrdersByID(id, orderId)
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"Success": false,
+			"Message": "View order failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success":     true,
+		"Message":     "View order successfull",
+		"Error":       false,
+		"Order Items": orders,
+	})
+
+}
+
+func ViewOrdersByUserID(ctx *gin.Context) {
+	idStr := ctx.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "View orders failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	orders, err := usecase.ViewOrdersByUserID(id)
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"Success": false,
+			"Message": "View orders failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success": true,
+		"Message": "View orders successfull",
+		"Error":   false,
+		"Orders":  orders,
+	})
+}
+
+func ViewOrderItemsByUserID(ctx *gin.Context) {
+	idStr := ctx.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "View orders failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	orderIdStr := ctx.DefaultQuery("booking_id", "0")
+	orderId, err := strconv.Atoi(orderIdStr)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "View Order Failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	orders, err := usecase.ViewOrderItemsByUserID(id, orderId)
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"Success": false,
+			"Message": "View orders failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success": true,
+		"Message": "View orders successfull",
+		"Error":   false,
+		"Orders":  orders,
+	})
+}

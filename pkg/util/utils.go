@@ -19,16 +19,6 @@ func CreateCartResponse(response *[]domain.CartResponse, cartProducts []domain.C
 	}
 }
 
-// func ProductPriceCalculation(quantities []int, prices []float64) []float64 {
-// 	total_price := make([]float64, len(quantities))
-// 	for i := range quantities {
-// 		total_price[i] = float64(quantities[i]) * prices[i]
-// 	}
-
-// 	return total_price
-
-// }
-
 func BuildOrderSummary(userCartDetails []domain.Cart) domain.OrderSummary {
 	var orderSummary domain.OrderSummary
 	orderSummary.TotalPrice = 0
@@ -101,7 +91,38 @@ func BuildOrder(orderItems []domain.OrderItem, user domain.User, orderItemID, or
 
 }
 
-// func UpdateProductStockQuantity(cartItem []domain.Cart) error {
-// 	product := domain.Product{}
+func BuildOrderResponse(orderRes []domain.OrderResponse, orders []domain.Order) []domain.OrderResponse {
+	for _, val := range orders {
+		order := domain.OrderResponse{
+			ID:            val.ID,
+			CreatedAt:     val.CreatedAt,
+			OrderStatus:   val.OrderStatus,
+			OrderDate:     val.OrderDate,
+			AddressID:     val.AddressID,
+			PaymentMethod: val.PaymentMethod,
+			BookingID:     val.BookingID,
+			OrderItemID:   val.OrderItemID,
+			TotalAmount:   val.TotalAmount,
+		}
+		orderRes = append(orderRes, order)
+	}
+	return orderRes
+}
 
-// }
+func BuildOrderItemResponse(orderItemRes []domain.OrderItemResponse, orders []domain.Order, orderItem []domain.OrderItem) []domain.OrderItemResponse {
+	addressId := orders[0].AddressID
+	for i := range orderItem {
+		orderItem := domain.OrderItemResponse{
+			ID:          orderItem[i].ID,
+			CreatedAt:   orderItem[i].CreatedAt,
+			ProductID:   int(orderItem[i].ProductID),
+			ProductName: orderItem[i].Product.ProductName,
+			Quantity:    int(orderItem[i].Quantity),
+			UnitPrice:   orderItem[i].UnitPrice,
+			Address:     int(addressId),
+			TotalPrice:  orderItem[i].TotalPrice,
+		}
+		orderItemRes = append(orderItemRes, orderItem)
+	}
+	return orderItemRes
+}

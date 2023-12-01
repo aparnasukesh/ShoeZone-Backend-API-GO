@@ -202,6 +202,8 @@ func GetProductByCategoryName(name string) ([]domain.Product, error) {
 	return product, nil
 }
 
+// Get- User Id from token--------------------------------------------------------------------------------------
+
 func GetUserIDFromToken(authorization string) (int, error) {
 	tokenParts := strings.Split(authorization, "Bearer ")
 	token, err := util.VerifyJWT(tokenParts[1])
@@ -214,6 +216,8 @@ func GetUserIDFromToken(authorization string) (int, error) {
 	}
 	return userID, nil
 }
+
+// User - Cart ---------------------------------------------------------------------------------------------------
 
 func AddToCart(cartProduct *domain.Cart, id int) error {
 	res, err := repository.CheckProductQuantity(cartProduct)
@@ -245,6 +249,8 @@ func DeleteCartItem(id, productID int) error {
 	}
 	return nil
 }
+
+// User - Order----------------------------------------------------------------------------------------------------
 
 func GetOrderSummary(userID int) (domain.OrderSummary, error) {
 	userCartDetails, err := repository.GetCartDetails(userID)
@@ -295,8 +301,6 @@ func OrderItem(userId int) error {
 		return err
 	}
 
-	//util.UpdateProductStockQuantity(userCartDetails)
-
 	err = repository.DeleteCartItemByUSerID(uint(userId))
 	if err != nil {
 		return err
@@ -304,4 +308,51 @@ func OrderItem(userId int) error {
 
 	return nil
 
+}
+
+func ViewOrders(id int) ([]domain.OrderResponse, error) {
+	orderRes := []domain.OrderResponse{}
+	orders, err := repository.ViewOrders(id)
+	if err != nil {
+		return nil, err
+	}
+
+	orderResponse := util.BuildOrderResponse(orderRes, orders)
+	return orderResponse, nil
+}
+
+func ViewOrdersByID(userId, orderId int) ([]domain.OrderItemResponse, error) {
+	orderItemRes := []domain.OrderItemResponse{}
+
+	order, orderItem, err := repository.ViewOrdersByID(userId, orderId)
+	if err != nil {
+		return nil, err
+	}
+
+	orderItemResponse := util.BuildOrderItemResponse(orderItemRes, order, orderItem)
+	return orderItemResponse, nil
+
+}
+
+func ViewOrdersByUserID(id int) ([]domain.OrderResponse, error) {
+	orderRes := []domain.OrderResponse{}
+
+	orders, err := repository.ViewOrdersByUserID(id)
+	if err != nil {
+		return nil, err
+	}
+	orderResponse := util.BuildOrderResponse(orderRes, orders)
+	return orderResponse, nil
+}
+
+func ViewOrderItemsByUserID(userId, orderId int) ([]domain.OrderItemResponse, error) {
+	orderItemRes := []domain.OrderItemResponse{}
+
+	order, orderItem, err := repository.ViewOrdersByID(userId, orderId)
+	if err != nil {
+		return nil, err
+	}
+
+	orderItemResponse := util.BuildOrderItemResponse(orderItemRes, order, orderItem)
+	return orderItemResponse, nil
 }

@@ -226,6 +226,32 @@ func CheckProductQuantity(cartProduct *domain.Cart) (bool, error) {
 	}
 	return false, errors.New("Out of stock")
 }
+
+func UpdateProductStockQuantity(productIDs, quantities []int) error {
+	products := []domain.Product{}
+
+	if err := db.DB.Where("id IN (?)", productIDs).Find(&products).Error; err != nil {
+		return err
+	}
+
+	if len(products) != len(quantities) {
+		return errors.New("lengths of productIDs and quantities are different")
+	}
+
+	for i := range products {
+
+		products[i].StockQuantity = products[i].StockQuantity - quantities[i]
+
+		if err := db.DB.Save(&products[i]).Error; err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// Cart-----------------------------------------------------------------------------------------------------------
+
 func AddToCart(cartProduct *domain.Cart, id int) error {
 	res := db.DB.Where("user_id = ? AND product_id = ?", id, cartProduct.ProductID).First(&cartProduct)
 
@@ -267,14 +293,6 @@ func DeleteCartItem(id, productID int) error {
 	return nil
 }
 
-func AddAddress(userAdd *domain.Address, id int) error {
-	userAdd.UserID = id
-	if err := db.DB.Create(&userAdd).Error; err != nil {
-		return err
-	}
-	return nil
-}
-
 func GetCartDetails(userID int) ([]domain.Cart, error) {
 	var userCartDetails []domain.Cart
 	res := db.DB.Where("user_id = ?", userID).Preload("CartProduct").Find(&userCartDetails)
@@ -286,6 +304,16 @@ func GetCartDetails(userID int) ([]domain.Cart, error) {
 	}
 	return userCartDetails, nil
 }
+
+func DeleteCartItemByUSerID(userId uint) error {
+	cartItem := domain.Cart{}
+	if err := db.DB.Where("user_id= ? ", userId).Delete(&cartItem).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+// Order-----------------------------------------------------------------------------------------------------------
 
 func OrderItem(orderItems []domain.OrderItem) error {
 
@@ -314,14 +342,6 @@ func Order(order domain.Order) error {
 	return nil
 }
 
-func DeleteCartItemByUSerID(userId uint) error {
-	cartItem := domain.Cart{}
-	if err := db.DB.Where("user_id= ? ", userId).Delete(&cartItem).Error; err != nil {
-		return err
-	}
-	return nil
-}
-
 func GetProductIDsFromCart(cartItem []domain.Cart) ([]int, []int) {
 	var productIds []int
 	var quantities []int
@@ -332,25 +352,42 @@ func GetProductIDsFromCart(cartItem []domain.Cart) ([]int, []int) {
 	}
 	return productIds, quantities
 }
-func UpdateProductStockQuantity(productIDs, quantities []int) error {
-	products := []domain.Product{}
 
-	if err := db.DB.Where("id IN (?)", productIDs).Find(&products).Error; err != nil {
-		return err
+func ViewOrders(userId int) ([]domain.Order, error) {
+	orders := []domain.Order{}
+
+	if err := db.DB.Where("user_id=?", userId).Find(&orders).Error; err != nil {
+		return nil, err
+	}
+	if len(orders) < 1 {
+		return nil, errors.New("No Orders Found")
+	}
+	return orders, nil
+}
+
+func ViewOrdersByID(userId, orderId int) ([]domain.Order, []domain.OrderItem, error) {
+	orders := []domain.Order{}
+	orderItems := []domain.OrderItem{}
+	if err := db.DB.Where("user_id=? AND booking_id=?", userId, orderId).Preload("OrderItems").Preload("Address").Find(&orders).Error; err != nil {
+		return nil, nil, err
+	}
+	if err := db.DB.Where("user_id=? AND order_id=?", userId, orderId).Preload("Product").Find(&orderItems).Error; err != nil {
+		return nil, nil, err
+	}
+	if len(orders) < 1 {
+		return nil, nil, errors.New("No Items Found")
+	}
+	return orders, orderItems, nil
+}
+
+func ViewOrdersByUserID(id int) ([]domain.Order, error) {
+	orders := []domain.Order{}
+	if err := db.DB.Where("user_id=?", id).Preload("OrderItems").Find(&orders).Error; err != nil {
+		return nil, err
 	}
 
-	if len(products) != len(quantities) {
-		return errors.New("lengths of productIDs and quantities are different")
+	if len(orders) < 1 {
+		return nil, errors.New("No Orders found")
 	}
-
-	for i := range products {
-
-		products[i].StockQuantity = products[i].StockQuantity - quantities[i]
-
-		if err := db.DB.Save(&products[i]).Error; err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return orders, nil
 }
