@@ -91,6 +91,15 @@ func UnblockUser(id int) error {
 	return nil
 
 }
+
+func AddAddress(userAdd *domain.Address, id int) error {
+	userAdd.UserID = id
+	if err := db.DB.Create(&userAdd).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
 func EditUserProfile(updateuser domain.UserProfileUpdate, id int) error {
 	db.DB.Set("gorm:association_autoupdate", false).Set("gorm:association_autocreate", false)
 
