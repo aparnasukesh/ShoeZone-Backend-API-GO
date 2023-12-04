@@ -768,3 +768,42 @@ func ViewOrderItemsByUserID(ctx *gin.Context) {
 		"Orders":  orders,
 	})
 }
+
+func OrderCancel(ctx *gin.Context) {
+	authorization := ctx.Request.Header.Get("Authorization")
+	id, err := usecase.GetUserIDFromToken(authorization)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Order Cancellation failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	orderIdStr := ctx.DefaultQuery("booking_id", "0")
+	orderId, err := strconv.Atoi(orderIdStr)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "View Order Failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	orders, err := usecase.OrderCancel(id, orderId)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Order Cancellation failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success":      true,
+		"Message":      "Order Cancelled Successfully",
+		"Error":        false,
+		"Order Status": orders.OrderStatus,
+	})
+
+}
