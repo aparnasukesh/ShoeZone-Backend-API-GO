@@ -391,3 +391,54 @@ func ViewOrdersByUserID(id int) ([]domain.Order, error) {
 	}
 	return orders, nil
 }
+
+func OrderCancel(userId, orderId int) (*domain.Order, error) {
+	orders := domain.Order{}
+	if err := db.DB.Where("user_id =? AND booking_id=?", userId, orderId).First(&orders).Error; err != nil {
+		return nil, err
+	}
+	if orders.OrderStatus != "order cancelled" {
+		orders.OrderStatus = "order cancelled"
+	} else {
+		return nil, errors.New("Order already cancelled")
+	}
+	if err := db.DB.Save(&orders).Error; err != nil {
+		return nil, err
+	}
+	return &orders, nil
+
+}
+
+func GetProductIDsFromOrderItems(orderItems []domain.OrderItem) ([]uint, []uint) {
+	var productIds []uint
+	var quantities []uint
+
+	for _, id := range orderItems {
+		productIds = append(productIds, id.ProductID)
+		quantities = append(quantities, id.Quantity)
+	}
+	return productIds, quantities
+}
+
+func ProductStockUpdationAfterCancellation(productIDs, quantities []uint) error {
+	products := []domain.Product{}
+
+	if err := db.DB.Where("id IN (?)", productIDs).Find(&products).Error; err != nil {
+		return err
+	}
+
+	if len(products) != len(quantities) {
+		return errors.New("lengths of productIDs and quantities are different")
+	}
+
+	for i := range products {
+
+		products[i].StockQuantity = products[i].StockQuantity + int(quantities[i])
+
+		if err := db.DB.Save(&products[i]).Error; err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

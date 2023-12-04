@@ -47,6 +47,8 @@ func Routes(r *gin.Engine) {
 		userAuthGroup.GET("/orders", handler.ViewOrders)
 		userAuthGroup.GET("/order/orderid", handler.ViewOrdersByID)
 
+		userAuthGroup.PATCH("order/cancel", handler.OrderCancel)
+
 	}
 
 	adminGroup := r.Group("/admin")
@@ -79,6 +81,8 @@ func Routes(r *gin.Engine) {
 
 		adminGroup.GET("/orders/:id", handler.ViewOrdersByUserID)
 		adminGroup.GET("/orders/orderid/:id", handler.ViewOrderItemsByUserID)
+
+		adminGroup.PATCH("order/cancel", handler.OrderCancel)
 
 	}
 

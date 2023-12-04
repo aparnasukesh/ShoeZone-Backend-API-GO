@@ -356,3 +356,21 @@ func ViewOrderItemsByUserID(userId, orderId int) ([]domain.OrderItemResponse, er
 	orderItemResponse := util.BuildOrderItemResponse(orderItemRes, order, orderItem)
 	return orderItemResponse, nil
 }
+
+func OrderCancel(userId, orderId int) (*domain.Order, error) {
+	orders, err := repository.OrderCancel(userId, orderId)
+	if err != nil {
+		return nil, err
+	}
+
+	_, orderItems, _ := repository.ViewOrdersByID(userId, orderId)
+
+	productIds, quantities := repository.GetProductIDsFromOrderItems(orderItems)
+
+	err = repository.ProductStockUpdationAfterCancellation(productIds, quantities)
+	if err != nil {
+		return nil, err
+	}
+
+	return orders, nil
+}
