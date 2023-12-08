@@ -333,3 +333,112 @@ func DeleteProduct(ctx *gin.Context) {
 		"Error":   nil,
 	})
 }
+
+// Admin - Coupon Handlers----------------------------------------------------------------------------------------
+func AddCoupon(ctx *gin.Context) {
+	newCoupon := domain.Coupon{}
+
+	if err := ctx.ShouldBindJSON(&newCoupon); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Binding Error",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	err := usecase.AddCoupon(&newCoupon)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Add Coupon failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusCreated, gin.H{
+		"Success": true,
+		"Message": "Add coupon successfull",
+		"Error":   false,
+	})
+}
+
+func DeleteCoupon(ctx *gin.Context) {
+	idStr := ctx.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Delete coupon failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	err = usecase.DeleteCoupon(id)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Delete coupon failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusNoContent, gin.H{
+		"Success": true,
+		"Message": "Coupon deleted succesffully",
+		"Error":   false,
+	})
+}
+
+func UpdateCoupon(ctx *gin.Context) {
+	idStr := ctx.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Update coupon failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	updateCoupon := domain.Coupon{}
+	if err := ctx.ShouldBindJSON(&updateCoupon); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Binding Error",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	err = usecase.UpdateCoupon(updateCoupon, id)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Update coupon failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success": true,
+		"Message": "Coupon updated successfully",
+		"Error":   false,
+	})
+}
+
+func ViewCoupons(ctx *gin.Context) {
+	coupons, err := usecase.ViewCoupons()
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"Success": false,
+			"Message": "View coupons failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success": true,
+		"Message": "View coupons successfull",
+		"Error":   false,
+		"Coupons": coupons,
+	})
+}

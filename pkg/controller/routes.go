@@ -50,11 +50,16 @@ func Routes(r *gin.Engine) {
 
 		// User - Order
 		userAuthGroup.GET("/ordersummary", handler.OrderSummary)
-		userAuthGroup.POST("/orderitem", handler.OrderItem)
 		userAuthGroup.GET("/orders", handler.ViewOrders)
 		userAuthGroup.GET("/order/orderid", handler.ViewOrdersByID)
 		userAuthGroup.PATCH("order/cancel", handler.OrderCancel)
 
+		// User - Payment
+		payment := userAuthGroup.Group("/payment")
+		{
+			payment.POST("/cod", handler.OrderItem)
+
+		}
 	}
 
 	adminGroup := r.Group("/admin")
@@ -89,6 +94,12 @@ func Routes(r *gin.Engine) {
 		adminGroup.GET("/orders/:id", handler.ViewOrdersByUserID)
 		adminGroup.GET("/orders/orderid/:id", handler.ViewOrderItemsByUserID)
 		adminGroup.PATCH("order/cancel", handler.OrderCancel)
+
+		//Admin - Coupon Management
+		adminGroup.POST("/coupon", handler.AddCoupon)
+		adminGroup.DELETE("/coupon/:id", handler.DeleteCoupon)
+		adminGroup.PATCH("/coupon/:id", handler.UpdateCoupon)
+		adminGroup.GET("/coupon", handler.ViewCoupons)
 
 	}
 

@@ -264,7 +264,7 @@ func GetOrderSummary(userID int) (domain.OrderSummary, error) {
 	return orderSummary, nil
 }
 
-func OrderItem(userId int) error {
+func OrderItem(userId int, coupon string) error {
 	userCartDetails, err := repository.GetCartDetails(userId)
 	if err != nil {
 		return err
@@ -275,10 +275,11 @@ func OrderItem(userId int) error {
 		return err
 	}
 
-	err = repository.OrderItem(orderItem)
+	err = repository.CreateOrderItem(orderItem)
 	if err != nil {
 		return err
 	}
+
 	user, err := repository.GetUserByID(userId)
 	if err != nil {
 		return err
@@ -288,14 +289,43 @@ func OrderItem(userId int) error {
 	if err != nil {
 		return nil
 	}
-	order := util.BuildOrder(orderItem, *user, orderID, orderId)
 
+	couponData := &domain.Coupon{}
+	usercoupon := domain.UserCoupon{}
+	validCoupon := &domain.Coupon{}
+
+	if coupon != "" {
+		couponData, err = repository.GetCouponByCouponName(coupon)
+	}
+	if couponData != nil && err == nil {
+		validCoupon, err = util.CouponValidate(couponData)
+		if err != nil {
+			return err
+		}
+	}
+
+	err = repository.CheckCouponUsedByUser(userId, validCoupon)
+	if err != nil {
+		usercoupon = util.BuildUserCoupon(userId, *validCoupon)
+		err = repository.CreateUserCoupon(usercoupon)
+		if err != nil {
+			return err
+		}
+		err = repository.UpdateCouponRemainingUses(validCoupon)
+		if err != nil {
+			return err
+		}
+	} else {
+		validCoupon.Code = ""
+		validCoupon.DiscountPercentage = 0
+	}
+	order := util.BuildOrder(orderItem, *user, orderID, orderId, *validCoupon)
 	err = repository.Order(order)
 	if err != nil {
 		return err
 	}
-	productIDs, quantities := repository.GetProductIDsFromCart(userCartDetails)
 
+	productIDs, quantities := util.GetProductIDsFromCart(userCartDetails)
 	err = repository.UpdateProductStockQuantity(productIDs, quantities)
 	if err != nil {
 		return err
@@ -373,4 +403,44 @@ func OrderCancel(userId, orderId int) (*domain.Order, error) {
 	}
 
 	return orders, nil
+}
+
+// Admin - Coupon------------------------------------------------------------------------------------------------
+
+func AddCoupon(coupon *domain.Coupon) error {
+	res, err := repository.FindCouponByCode(coupon)
+	if err != nil && res == nil {
+		err := repository.AddCoupon(coupon)
+		if err != nil {
+			return err
+		}
+	} else {
+		return errors.New("Coupon Already Exist")
+	}
+
+	return nil
+}
+
+func DeleteCoupon(id int) error {
+	err := repository.DeleteCoupon(id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func UpdateCoupon(updateCoupon domain.Coupon, id int) error {
+	err := repository.UpdateCoupon(updateCoupon, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func ViewCoupons() ([]domain.Coupon, error) {
+	coupon, err := repository.ViewCoupons()
+	if err != nil {
+		return nil, err
+	}
+	return coupon, nil
 }

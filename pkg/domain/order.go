@@ -14,6 +14,9 @@ type Order struct {
 	OrderDate     time.Time `json:"order_date"`
 	AddressID     uint      `json:"address_id"`
 	PaymentMethod string    `json:"payment_method"`
+	CouponName    string    `json:"coupon_name"`
+	DiscountPrice float64   `json:"discount_price"`
+	AmountPayable float64   `json:"amount_payable"`
 	BookingID     uint      `json:"booking_id"`
 	OrderItemID   uint      `json:"order_item_id"`
 	OrderItems    OrderItem `gorm:"foreignKey:OrderItemID" json:"order_items"`
@@ -65,4 +68,32 @@ type OrderSummary struct {
 	UserID     int            `json:"user_id"`
 	TotalPrice float64        `json:"total_price"`
 	Products   []OrderProduct `json:"products"`
+}
+
+// Coupon
+type Coupon struct {
+	gorm.Model
+	Code               string    `json:"code"`
+	DiscountPercentage int       `json:"discount_percentage"`
+	ExpiryDate         time.Time `json:"expiry_date"`
+	UsageLimit         int       `json:"usage_limit"`
+	RemainingUses      int       `json:"remaining_uses"`
+}
+
+type UserCoupon struct {
+	gorm.Model
+	UserID   uint      `json:"user_id"`
+	CouponID uint      `json:"coupon_id"`
+	Used     bool      `json:"used"`
+	UsedDate time.Time `json:"used_date,omitempty"`
+}
+
+type UserCouponResponse struct {
+	ID         uint      `json:"id"`
+	CreatedAt  time.Time `json:"created_at"`
+	UserID     uint      `json:"user_id"`
+	CouponID   uint      `json:"coupon_id"`
+	Used       bool      `json:"used"`
+	UsedDate   time.Time `json:"used_date,omitempty"`
+	CouponInfo Coupon    `gorm:"foreignKey:CouponID" json:"coupon_info"`
 }

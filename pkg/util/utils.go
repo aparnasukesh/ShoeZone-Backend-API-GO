@@ -1,6 +1,7 @@
 package util
 
 import (
+	"errors"
 	"strconv"
 	"time"
 
@@ -71,15 +72,22 @@ func BuildOrderItem(userCartDetails []domain.Cart, userId int) ([]domain.OrderIt
 	return orderItems, uint(orderId), nil
 }
 
-func BuildOrder(orderItems []domain.OrderItem, user domain.User, orderItemID, orderID uint) domain.Order {
+func BuildOrder(orderItems []domain.OrderItem, user domain.User, orderItemID, orderID uint, coupon domain.Coupon) domain.Order {
 	var orders domain.Order
 	var totalAmount float64 = 0
+	var discountAmount float64 = 0
+	var amountPayable float64 = 0
 	for _, orderItem := range orderItems {
 		totalAmount += orderItem.TotalPrice
 	}
-
+	offerAmount := float64(coupon.DiscountPercentage)
+	discountAmount = (offerAmount / 100) * totalAmount
+	amountPayable = totalAmount - discountAmount
 	orders.UserID = user.ID
 	orders.TotalAmount = totalAmount
+	orders.DiscountPrice = discountAmount
+	orders.AmountPayable = amountPayable
+	orders.CouponName = coupon.Code
 	orders.OrderStatus = "Pending status"
 	orders.AddressID = user.DefaultAddressID
 	orders.OrderDate = time.Now()
@@ -125,4 +133,33 @@ func BuildOrderItemResponse(orderItemRes []domain.OrderItemResponse, orders []do
 		orderItemRes = append(orderItemRes, orderItem)
 	}
 	return orderItemRes
+}
+
+func CouponValidate(coupon *domain.Coupon) (*domain.Coupon, error) {
+	currentTime := time.Now()
+
+	if currentTime.Before(coupon.ExpiryDate) == true && coupon.RemainingUses > 0 {
+		return coupon, nil
+	}
+	return nil, errors.New("Coupon not valid")
+}
+
+func BuildUserCoupon(userId int, coupon domain.Coupon) domain.UserCoupon {
+	userCoupon := &domain.UserCoupon{}
+	userCoupon.UserID = uint(userId)
+	userCoupon.CouponID = coupon.ID
+	userCoupon.Used = true
+	userCoupon.UsedDate = time.Now()
+	return *userCoupon
+}
+
+func GetProductIDsFromCart(cartItem []domain.Cart) ([]int, []int) {
+	var productIds []int
+	var quantities []int
+
+	for _, id := range cartItem {
+		productIds = append(productIds, id.ProductID)
+		quantities = append(quantities, id.Quantity)
+	}
+	return productIds, quantities
 }
