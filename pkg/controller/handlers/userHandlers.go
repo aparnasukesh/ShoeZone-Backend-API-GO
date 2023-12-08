@@ -619,7 +619,8 @@ func OrderItem(ctx *gin.Context) {
 		})
 		return
 	}
-	err = usecase.OrderItem(id)
+	coupon := ctx.DefaultQuery("coupon_name", "")
+	err = usecase.OrderItem(id, coupon)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"Success": false,

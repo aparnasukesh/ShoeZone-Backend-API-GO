@@ -315,7 +315,7 @@ func DeleteCartItemByUSerID(userId uint) error {
 
 // Order-----------------------------------------------------------------------------------------------------------
 
-func OrderItem(orderItems []domain.OrderItem) error {
+func CreateOrderItem(orderItems []domain.OrderItem) error {
 
 	for _, orderItem := range orderItems {
 		if err := db.DB.Preload("Product").Create(&orderItem).Error; err != nil {
@@ -340,17 +340,6 @@ func Order(order domain.Order) error {
 		return err
 	}
 	return nil
-}
-
-func GetProductIDsFromCart(cartItem []domain.Cart) ([]int, []int) {
-	var productIds []int
-	var quantities []int
-
-	for _, id := range cartItem {
-		productIds = append(productIds, id.ProductID)
-		quantities = append(quantities, id.Quantity)
-	}
-	return productIds, quantities
 }
 
 func ViewOrders(userId int) ([]domain.Order, error) {
@@ -440,5 +429,85 @@ func ProductStockUpdationAfterCancellation(productIDs, quantities []uint) error 
 		}
 	}
 
+	return nil
+}
+
+// Admin - Coupon----------------------------------------------------------------------------------------------------
+func AddCoupon(coupon *domain.Coupon) error {
+	if err := db.DB.Create(coupon).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func DeleteCoupon(id int) error {
+	coupon := domain.Coupon{}
+	if err := db.DB.Where("id=?", id).Delete(&coupon).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func UpdateCoupon(updatecoupon domain.Coupon, id int) error {
+	if err := db.DB.Model(&updatecoupon).Where("id=?", id).Updates(&updatecoupon).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func ViewCoupons() ([]domain.Coupon, error) {
+	coupon := []domain.Coupon{}
+	if err := db.DB.Find(&coupon).Error; err != nil {
+		return nil, err
+	}
+	return coupon, nil
+}
+
+func FindCouponByCode(coupon *domain.Coupon) (*domain.Coupon, error) {
+	dbcoupon := &domain.Coupon{}
+
+	res := db.DB.Where("code Like ?", coupon.Code).First(&dbcoupon)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	if res.RowsAffected == 0 {
+		return nil, gorm.ErrRecordNotFound
+	}
+	return dbcoupon, nil
+
+}
+
+// User - Coupon---------------------------------------------------------------------------------------------------
+func GetCouponByCouponName(code string) (*domain.Coupon, error) {
+	coupon := &domain.Coupon{}
+
+	if err := db.DB.Where("code Like ?", code).First(&coupon).Error; err != nil {
+		return nil, err
+	}
+	return coupon, nil
+}
+
+// User- User_Coupon ---------------------------------------------------------------------------------------------
+func CheckCouponUsedByUser(userId int, coupon *domain.Coupon) error {
+
+	userCoupon := &domain.UserCoupon{}
+	if err := db.DB.Where("user_id=?  AND coupon_id=? AND used=?", userId, coupon.ID, true).First(&userCoupon).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func CreateUserCoupon(usercoupon domain.UserCoupon) error {
+	if err := db.DB.Create(&usercoupon).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func UpdateCouponRemainingUses(coupon *domain.Coupon) error {
+	coupon.RemainingUses = coupon.RemainingUses - 1
+	if err := db.DB.Model(&coupon).Where("id=?", coupon.ID).Updates(&coupon).Error; err != nil {
+		return err
+	}
 	return nil
 }
