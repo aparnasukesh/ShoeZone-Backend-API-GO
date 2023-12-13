@@ -39,3 +39,8 @@ type UserProfileUpdate struct {
 	DefaultAddressID uint     `json:"default_address_id"`
 	DefaultAddress   *Address `gorm:"foreignKey:DefaultAddressID"`
 }
+
+type ResetPassword struct {
+	OTP         string `json:"otp"`
+	NewPassword string `json:"new_password" validate:"required,min=8,max=16"`
+}

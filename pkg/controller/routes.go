@@ -13,7 +13,7 @@ func Routes(r *gin.Engine) {
 		// User - Sign up, Log in
 		userGroup.POST("/register", handler.RegisterUser)
 		userGroup.POST("/register/validate", handler.RegisterValidate)
-		userGroup.POST("/login", handler.UserLogin)
+		userGroup.POST("/login", handler.Login)
 
 		// User - Products
 		userGroup.GET("/products", handler.GetProducts)
@@ -29,6 +29,10 @@ func Routes(r *gin.Engine) {
 		userGroup.GET("/categories", handler.GetCategoriesUser)
 		userGroup.GET("/product/category/:id", handler.GetProductByCategoryID)
 		userGroup.GET("/product/category", handler.GetProductByCategoryName)
+
+		// User - Password
+		userGroup.POST("/forgot/password", handler.ForgotPassword)
+		userGroup.POST("/reset/password", handler.ResetPassword)
 
 	}
 
@@ -64,6 +68,7 @@ func Routes(r *gin.Engine) {
 
 	adminGroup := r.Group("/admin")
 	{
+		adminGroup.POST("/login", handler.Login)
 		adminGroup.Use(handler.AdminAuthRequired)
 
 		// User Management

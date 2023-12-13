@@ -128,14 +128,20 @@ func AddAddress(userAdd *domain.Address, id int) error {
 	return nil
 }
 
-func EditUserProfile(user domain.UserProfileUpdate, id int) error {
+func EditUserProfile(user domain.UserProfileUpdate, id int) (*domain.UserProfileUpdate, error) {
+	password := user.Password
 	user.Password = util.HashPassword(user.Password)
-	err := repository.EditUserProfile(user, id)
+	updatedUser, err := repository.EditUserProfile(user, id)
 	if err != nil {
-		return err
+		return nil, err
+	}
+	user, err = util.BuildUserProfileUpdate(*updatedUser, password)
+
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
+	return &user, nil
 }
 
 func ProfileDetails(id int) (*domain.UserProfileUpdate, error) {
@@ -152,4 +158,37 @@ func ViewAddress(id int) ([]domain.Address, error) {
 		return nil, err
 	}
 	return userAdd, nil
+}
+
+func ForgotPassword(email string) error {
+	user, err := repository.FindUserByEmailResetPassword(email)
+	if err != nil {
+		return err
+	}
+	otp := util.Otpgeneration(user.Email)
+	err = repository.UpdateOtp(email, otp)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func ResetPassword(data domain.ResetPassword, email string) error {
+	user, err := repository.FindUserByEmailResetPassword(email)
+	if err != nil {
+		return err
+	}
+	password := util.HashPassword(data.NewPassword)
+	if email == user.Email && data.OTP == user.Otp {
+		if password == user.Password {
+			return errors.New("Try another password")
+		}
+		err := repository.ResetPassword(email, password)
+		if err != nil {
+			return err
+		}
+	} else {
+		return errors.New("Invalid otp")
+	}
+	return nil
 }
