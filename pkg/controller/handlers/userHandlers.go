@@ -69,7 +69,7 @@ func RegisterValidate(ctx *gin.Context) {
 	})
 }
 
-func UserLogin(ctx *gin.Context) {
+func Login(ctx *gin.Context) {
 	userData := domain.User{}
 	if err := ctx.ShouldBindJSON(&userData); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -506,7 +506,7 @@ func EditUserProfile(ctx *gin.Context) {
 		})
 		return
 	}
-	err = usecase.EditUserProfile(user, id)
+	updatedUser, err := usecase.EditUserProfile(user, id)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"Success": false,
@@ -520,7 +520,53 @@ func EditUserProfile(ctx *gin.Context) {
 		"Success":         true,
 		"Message":         "User profile updated successfully",
 		"Error":           nil,
-		"Updated profile": user,
+		"Updated profile": updatedUser,
+	})
+}
+
+func ForgotPassword(ctx *gin.Context) {
+	email := ctx.DefaultQuery("email", "")
+	err := usecase.ForgotPassword(email)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Failed to send otp",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success": true,
+		"Message": "Otp send successfully",
+		"Error":   false,
+	})
+}
+
+func ResetPassword(ctx *gin.Context) {
+	email := ctx.DefaultQuery("email", "")
+	data := domain.ResetPassword{}
+	if err := ctx.ShouldBindJSON(&data); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Binding error",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	err := usecase.ResetPassword(data, email)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Reset password failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success":      true,
+		"Message":      "Reset password successfull",
+		"Error":        false,
+		"New Password": data.NewPassword,
 	})
 }
 
@@ -580,6 +626,7 @@ func ViewAddress(ctx *gin.Context) {
 	})
 }
 
+// User - Order---------------------------------------------------------------------------------------------------
 func OrderSummary(ctx *gin.Context) {
 	authorization := ctx.Request.Header.Get("Authorization")
 	id, err := usecase.GetUserIDFromToken(authorization)

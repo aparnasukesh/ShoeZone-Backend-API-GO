@@ -163,3 +163,22 @@ func GetProductIDsFromCart(cartItem []domain.Cart) ([]int, []int) {
 	}
 	return productIds, quantities
 }
+
+func BuildUserProfileUpdate(updatedUser domain.User, password string) (domain.UserProfileUpdate, error) {
+	user := &domain.UserProfileUpdate{}
+
+	user.Username = updatedUser.Username
+	user.Phone = updatedUser.Phone
+	user.Email = updatedUser.Email
+	user.Gender = updatedUser.Gender
+	user.DefaultAddressID = updatedUser.DefaultAddressID
+	user.Dateofbirth = updatedUser.Dateofbirth
+
+	if password == "" {
+		user.Password = "password not updated"
+	} else {
+		user.Password = password
+	}
+
+	return *user, nil
+}

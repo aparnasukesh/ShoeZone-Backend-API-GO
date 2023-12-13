@@ -100,15 +100,18 @@ func AddAddress(userAdd *domain.Address, id int) error {
 	return nil
 }
 
-func EditUserProfile(updateuser domain.UserProfileUpdate, id int) error {
+func EditUserProfile(updateuser domain.UserProfileUpdate, id int) (*domain.User, error) {
 	db.DB.Set("gorm:association_autoupdate", false).Set("gorm:association_autocreate", false)
 
 	result := db.DB.Model(&domain.User{}).Where("id = ?", id).Updates(updateuser)
 	if result.Error != nil {
-		return result.Error
+		return nil, result.Error
 	}
-
-	return nil
+	updatedUser := domain.User{}
+	if err := db.DB.Where("id=?", id).First(&updatedUser).Error; err != nil {
+		return nil, err
+	}
+	return &updatedUser, nil
 }
 
 func ProfileDetails(id int) (*domain.UserProfileUpdate, error) {
@@ -125,4 +128,28 @@ func ViewAddress(id int) ([]domain.Address, error) {
 		return nil, err
 	}
 	return userAdd, nil
+}
+
+func FindUserByEmailResetPassword(email string) (*domain.User, error) {
+	user := domain.User{}
+	if err := db.DB.Where("email=?", email).First(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func UpdateOtp(email, otp string) error {
+	user := &domain.User{}
+	if err := db.DB.Model(user).Where("email =?", email).Update("otp", otp).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func ResetPassword(email, password string) error {
+	user := &domain.User{}
+	if err := db.DB.Model(&user).Where("email=?", email).Update("password", password).Error; err != nil {
+		return err
+	}
+	return nil
 }
