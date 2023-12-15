@@ -64,6 +64,8 @@ func Routes(r *gin.Engine) {
 			payment.POST("/cod", handler.OrderItem)
 
 		}
+
+		userAuthGroup.POST("/wallet", handler.AddAmountToWallet)
 	}
 
 	adminGroup := r.Group("/admin")

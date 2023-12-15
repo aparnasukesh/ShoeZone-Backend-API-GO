@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+	"time"
 
 	"github.com/aparnasukesh/shoezone/pkg/db"
 	"github.com/aparnasukesh/shoezone/pkg/domain"
@@ -508,6 +509,28 @@ func UpdateCouponRemainingUses(coupon *domain.Coupon) error {
 	coupon.RemainingUses = coupon.RemainingUses - 1
 	if err := db.DB.Model(&coupon).Where("id=?", coupon.ID).Updates(&coupon).Error; err != nil {
 		return err
+	}
+	return nil
+}
+
+func CreateWalletAmount(data *domain.Wallet, userId int) error {
+	res := db.DB.Where("user_id=?", userId).First(&data)
+	if res.Error != nil {
+		if res.Error == gorm.ErrRecordNotFound {
+			data.UserID = uint(userId)
+			data.LastTransaction = time.Now()
+			if err := db.DB.Create(&data).Error; err != nil {
+				return err
+			}
+		} else {
+			return res.Error
+		}
+	} else {
+		data.Balance += data.Balance
+		result := db.DB.Save(&data)
+		if result.Error != nil {
+			return result.Error
+		}
 	}
 	return nil
 }

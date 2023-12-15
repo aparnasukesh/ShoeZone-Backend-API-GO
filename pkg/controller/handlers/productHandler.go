@@ -442,3 +442,41 @@ func ViewCoupons(ctx *gin.Context) {
 		"Coupons": coupons,
 	})
 }
+
+// User - Wallet------------------------------------------------------------------------------------------------------
+
+func AddAmountToWallet(ctx *gin.Context) {
+	data := domain.Wallet{}
+	if err := ctx.ShouldBindJSON(&data); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Binding error",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	authotization := ctx.Request.Header.Get("Authorization")
+	id, err := usecase.GetUserIDFromToken(authotization)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Add amount failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	err = usecase.AddAmountToWallet(&data, id)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Add amount failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success": true,
+		"Message": "Add amount successfull",
+		"Error":   false,
+	})
+}

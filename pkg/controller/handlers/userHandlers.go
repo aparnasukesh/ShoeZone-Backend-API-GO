@@ -853,5 +853,4 @@ func OrderCancel(ctx *gin.Context) {
 		"Error":        false,
 		"Order Status": orders.OrderStatus,
 	})
-
 }

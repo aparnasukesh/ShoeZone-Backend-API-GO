@@ -444,3 +444,12 @@ func ViewCoupons() ([]domain.Coupon, error) {
 	}
 	return coupon, nil
 }
+
+// Wallet----------------------------------------------------------------------------------------------------------
+func AddAmountToWallet(data *domain.Wallet, userId int) error {
+	err := repository.CreateWalletAmount(data, userId)
+	if err != nil {
+		return err
+	}
+	return nil
+}
