@@ -101,6 +101,7 @@ func Routes(r *gin.Engine) {
 		adminGroup.GET("/orders/:id", handler.ViewOrdersByUserID)
 		adminGroup.GET("/orders/orderid/:id", handler.ViewOrderItemsByUserID)
 		adminGroup.PATCH("order/cancel", handler.OrderCancel)
+		adminGroup.PATCH("/orderstatus", handler.ChangeOrderStatus)
 
 		//Admin - Coupon Management
 		adminGroup.POST("/coupon", handler.AddCoupon)

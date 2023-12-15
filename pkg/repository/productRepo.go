@@ -534,3 +534,20 @@ func CreateWalletAmount(data *domain.Wallet, userId int) error {
 	}
 	return nil
 }
+
+// Admin - Change Order Status--------------------------------------------------------------------------------------
+func ChangeOrderStatus() error {
+
+	orders := []domain.Order{}
+	if err := db.DB.Where("order_status = ?", "Pending status").Find(&orders).Error; err != nil {
+		return err
+	}
+
+	for _, order := range orders {
+		if err := db.DB.Model(&order).Update("order_status", "Order Delivered").Error; err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

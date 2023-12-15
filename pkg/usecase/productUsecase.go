@@ -453,3 +453,12 @@ func AddAmountToWallet(data *domain.Wallet, userId int) error {
 	}
 	return nil
 }
+
+// Admin - Change Order Status-------------------------------------------------------------------------------------
+func ChangeOrderStatus() error {
+	err := repository.ChangeOrderStatus()
+	if err != nil {
+		return err
+	}
+	return nil
+}

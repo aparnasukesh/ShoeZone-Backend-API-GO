@@ -480,3 +480,21 @@ func AddAmountToWallet(ctx *gin.Context) {
 		"Error":   false,
 	})
 }
+
+// Admin - Order Status Management---------------------------------------------------------------------------------
+func ChangeOrderStatus(ctx *gin.Context) {
+	err := usecase.ChangeOrderStatus()
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Change order status failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success": true,
+		"Message": "Change order status successfull",
+		"Error":   false,
+	})
+}
