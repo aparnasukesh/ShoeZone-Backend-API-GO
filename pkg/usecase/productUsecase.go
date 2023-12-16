@@ -340,6 +340,80 @@ func OrderItem(userId int, coupon string) error {
 
 }
 
+func WalletPayment(userId int, coupon string) error {
+	userCartDetails, err := repository.GetCartDetails(userId)
+	if err != nil {
+		return err
+	}
+
+	orderItem, orderId, err := util.BuildOrderItem(userCartDetails, userId)
+	if err != nil {
+		return err
+	}
+
+	err = repository.CreateOrderItem(orderItem)
+	if err != nil {
+		return err
+	}
+
+	user, err := repository.GetUserByID(userId)
+	if err != nil {
+		return err
+	}
+
+	orderID, err := repository.GetOrderItemByUserIdAndOrderId(uint(userId), orderId)
+	if err != nil {
+		return nil
+	}
+
+	couponData := &domain.Coupon{}
+	usercoupon := domain.UserCoupon{}
+	validCoupon := &domain.Coupon{}
+
+	if coupon != "" {
+		couponData, err = repository.GetCouponByCouponName(coupon)
+	}
+	if couponData != nil && err == nil {
+		validCoupon, err = util.CouponValidate(couponData)
+		if err != nil {
+			return err
+		}
+	}
+
+	err = repository.CheckCouponUsedByUser(userId, validCoupon)
+	if err != nil {
+		usercoupon = util.BuildUserCoupon(userId, *validCoupon)
+		err = repository.CreateUserCoupon(usercoupon)
+		if err != nil {
+			return err
+		}
+		err = repository.UpdateCouponRemainingUses(validCoupon)
+		if err != nil {
+			return err
+		}
+	} else {
+		validCoupon.Code = ""
+		validCoupon.DiscountPercentage = 0
+	}
+	order := util.BuildOrderByWalletPayment(orderItem, *user, orderID, orderId, *validCoupon)
+	err = repository.Order(order)
+	if err != nil {
+		return err
+	}
+	repository.UpdateWalletAmouont(order, userId)
+	productIDs, quantities := util.GetProductIDsFromCart(userCartDetails)
+	err = repository.UpdateProductStockQuantity(productIDs, quantities)
+	if err != nil {
+		return err
+	}
+
+	err = repository.DeleteCartItemByUSerID(uint(userId))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 func ViewOrders(id int) ([]domain.OrderResponse, error) {
 	orderRes := []domain.OrderResponse{}
 	orders, err := repository.ViewOrders(id)
@@ -403,6 +477,35 @@ func OrderCancel(userId, orderId int) (*domain.Order, error) {
 	}
 
 	return orders, nil
+}
+
+func OrderReturn(orderId, userId int) error {
+	_, err := repository.OrderReturn(orderId, userId)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func ReturnConfirmation(userId, orderId int) error {
+	orders, err := repository.ReturnConfirmation(userId, orderId)
+	if err != nil {
+		return err
+	}
+	_, orderItems, _ := repository.ViewOrdersByID(userId, orderId)
+	productIds, quantities := repository.GetProductIDsFromOrderItems(orderItems)
+
+	err = repository.RefundWalletAmount(*orders, userId)
+	if err != nil {
+		return errors.New("Refund failed")
+	}
+
+	err = repository.ProductStockUpdationAfterCancellation(productIds, quantities)
+	if err != nil {
+		return err
+	}
+	return nil
+
 }
 
 // Admin - Coupon------------------------------------------------------------------------------------------------

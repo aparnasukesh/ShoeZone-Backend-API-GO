@@ -498,3 +498,40 @@ func ChangeOrderStatus(ctx *gin.Context) {
 		"Error":   false,
 	})
 }
+
+func ReturnConfirmation(ctx *gin.Context) {
+	userIdStr := ctx.DefaultQuery("user_id", "0")
+	userId, err := strconv.Atoi(userIdStr)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Return confirmation failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	orderIdStr := ctx.DefaultQuery("booking_id", "0")
+	orderId, err := strconv.Atoi(orderIdStr)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Return confirmation failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	err = usecase.ReturnConfirmation(userId, orderId)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Return confirmation failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success": true,
+		"Message": "Return confirmation successfull",
+		"Error":   false,
+	})
+}
