@@ -853,5 +853,69 @@ func OrderCancel(ctx *gin.Context) {
 		"Error":        false,
 		"Order Status": orders.OrderStatus,
 	})
+}
 
+func OrderReturn(ctx *gin.Context) {
+	authorization := ctx.Request.Header.Get("Authorization")
+	id, err := usecase.GetUserIDFromToken(authorization)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Return order failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	orderIdStr := ctx.DefaultQuery("booking_id", "0")
+	orderId, err := strconv.Atoi(orderIdStr)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Return order failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	err = usecase.OrderReturn(orderId, id)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Return order failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success": true,
+		"Message": "Return request accepted",
+		"Error":   false,
+	})
+}
+
+func WalletPayment(ctx *gin.Context) {
+	authorization := ctx.Request.Header.Get("Authorization")
+	id, err := usecase.GetUserIDFromToken(authorization)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Order failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	coupon := ctx.DefaultQuery("coupon_name", "")
+	err = usecase.WalletPayment(id, coupon)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Order failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success": true,
+		"Message": "Order Successfull",
+		"Error":   nil,
+	})
 }

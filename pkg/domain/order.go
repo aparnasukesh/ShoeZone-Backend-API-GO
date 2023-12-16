@@ -97,3 +97,11 @@ type UserCouponResponse struct {
 	UsedDate   time.Time `json:"used_date,omitempty"`
 	CouponInfo Coupon    `gorm:"foreignKey:CouponID" json:"coupon_info"`
 }
+
+// Wallet
+type Wallet struct {
+	gorm.Model
+	UserID          uint      `json:"user_id" gorm:"uniqueIndex"`
+	Balance         float64   `json:"balance"`
+	LastTransaction time.Time `json:"last_transaction"`
+}

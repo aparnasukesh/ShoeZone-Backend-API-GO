@@ -442,3 +442,96 @@ func ViewCoupons(ctx *gin.Context) {
 		"Coupons": coupons,
 	})
 }
+
+// User - Wallet------------------------------------------------------------------------------------------------------
+
+func AddAmountToWallet(ctx *gin.Context) {
+	data := domain.Wallet{}
+	if err := ctx.ShouldBindJSON(&data); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Binding error",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	authotization := ctx.Request.Header.Get("Authorization")
+	id, err := usecase.GetUserIDFromToken(authotization)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Add amount failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	err = usecase.AddAmountToWallet(&data, id)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Add amount failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success": true,
+		"Message": "Add amount successfull",
+		"Error":   false,
+	})
+}
+
+// Admin - Order Status Management---------------------------------------------------------------------------------
+func ChangeOrderStatus(ctx *gin.Context) {
+	err := usecase.ChangeOrderStatus()
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Change order status failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success": true,
+		"Message": "Change order status successfull",
+		"Error":   false,
+	})
+}
+
+func ReturnConfirmation(ctx *gin.Context) {
+	userIdStr := ctx.DefaultQuery("user_id", "0")
+	userId, err := strconv.Atoi(userIdStr)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Return confirmation failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	orderIdStr := ctx.DefaultQuery("booking_id", "0")
+	orderId, err := strconv.Atoi(orderIdStr)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Return confirmation failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	err = usecase.ReturnConfirmation(userId, orderId)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Return confirmation failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success": true,
+		"Message": "Return confirmation successfull",
+		"Error":   false,
+	})
+}

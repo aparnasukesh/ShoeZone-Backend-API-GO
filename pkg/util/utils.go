@@ -99,6 +99,33 @@ func BuildOrder(orderItems []domain.OrderItem, user domain.User, orderItemID, or
 
 }
 
+func BuildOrderByWalletPayment(orderItems []domain.OrderItem, user domain.User, orderItemID, orderID uint, coupon domain.Coupon)domain.Order{
+
+	var orders domain.Order
+	var totalAmount float64 = 0
+	var discountAmount float64 = 0
+	var amountPayable float64 = 0
+	for _, orderItem := range orderItems {
+		totalAmount += orderItem.TotalPrice
+	}
+	offerAmount := float64(coupon.DiscountPercentage)
+	discountAmount = (offerAmount / 100) * totalAmount
+	amountPayable = totalAmount - discountAmount
+	orders.UserID = user.ID
+	orders.TotalAmount = totalAmount
+	orders.DiscountPrice = discountAmount
+	orders.AmountPayable = amountPayable
+	orders.CouponName = coupon.Code
+	orders.OrderStatus = "Pending status"
+	orders.AddressID = user.DefaultAddressID
+	orders.OrderDate = time.Now()
+	orders.PaymentMethod = "Wallet Payment"
+	orders.OrderItemID = orderItemID
+	orders.BookingID = orderID
+
+	return orders
+
+}
 func BuildOrderResponse(orderRes []domain.OrderResponse, orders []domain.Order) []domain.OrderResponse {
 	for _, val := range orders {
 		order := domain.OrderResponse{

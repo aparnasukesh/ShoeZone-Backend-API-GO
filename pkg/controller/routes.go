@@ -57,11 +57,16 @@ func Routes(r *gin.Engine) {
 		userAuthGroup.GET("/orders", handler.ViewOrders)
 		userAuthGroup.GET("/order/orderid", handler.ViewOrdersByID)
 		userAuthGroup.PATCH("order/cancel", handler.OrderCancel)
+		userAuthGroup.PATCH("/order/return", handler.OrderReturn)
+
+		// User - Wallet
+		userAuthGroup.POST("/wallet", handler.AddAmountToWallet)
 
 		// User - Payment
 		payment := userAuthGroup.Group("/payment")
 		{
 			payment.POST("/cod", handler.OrderItem)
+			payment.POST("/wallet", handler.WalletPayment)
 
 		}
 	}
@@ -69,6 +74,7 @@ func Routes(r *gin.Engine) {
 	adminGroup := r.Group("/admin")
 	{
 		adminGroup.POST("/login", handler.Login)
+
 		adminGroup.Use(handler.AdminAuthRequired)
 
 		// User Management
@@ -99,6 +105,8 @@ func Routes(r *gin.Engine) {
 		adminGroup.GET("/orders/:id", handler.ViewOrdersByUserID)
 		adminGroup.GET("/orders/orderid/:id", handler.ViewOrderItemsByUserID)
 		adminGroup.PATCH("order/cancel", handler.OrderCancel)
+		adminGroup.PATCH("/orderstatus", handler.ChangeOrderStatus)
+		adminGroup.PATCH("/order/return", handler.ReturnConfirmation)
 
 		//Admin - Coupon Management
 		adminGroup.POST("/coupon", handler.AddCoupon)

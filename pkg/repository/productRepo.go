@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+	"time"
 
 	"github.com/aparnasukesh/shoezone/pkg/db"
 	"github.com/aparnasukesh/shoezone/pkg/domain"
@@ -386,7 +387,7 @@ func OrderCancel(userId, orderId int) (*domain.Order, error) {
 	if err := db.DB.Where("user_id =? AND booking_id=?", userId, orderId).First(&orders).Error; err != nil {
 		return nil, err
 	}
-	if orders.OrderStatus != "order cancelled" {
+	if orders.OrderStatus != "order cancelled" && (orders.OrderStatus == "Pending Status" || orders.OrderStatus == "pending status") {
 		orders.OrderStatus = "order cancelled"
 	} else {
 		return nil, errors.New("Order already cancelled")
@@ -430,6 +431,38 @@ func ProductStockUpdationAfterCancellation(productIDs, quantities []uint) error 
 	}
 
 	return nil
+}
+
+func OrderReturn(orderId, userId int) (*domain.Order, error) {
+	orders := domain.Order{}
+	if err := db.DB.Where("user_id =? AND booking_id=?", userId, orderId).First(&orders).Error; err != nil {
+		return nil, err
+	}
+	if orders.OrderStatus == "Order Delivered" {
+		orders.OrderStatus = "Return initiated"
+	} else {
+		return nil, errors.New("Return failed")
+	}
+	if err := db.DB.Save(&orders).Error; err != nil {
+		return nil, err
+	}
+	return &orders, nil
+}
+
+func ReturnConfirmation(userId, orderId int) (*domain.Order, error) {
+	orders := domain.Order{}
+	if err := db.DB.Where("user_id=? AND booking_id=?", userId, orderId).First(&orders).Error; err != nil {
+		return nil, err
+	}
+	if orders.OrderStatus == "Return initiated" {
+		orders.OrderStatus = "Return completed"
+	} else {
+		return nil, errors.New("Return failed")
+	}
+	if err := db.DB.Save(&orders).Error; err != nil {
+		return nil, err
+	}
+	return &orders, nil
 }
 
 // Admin - Coupon----------------------------------------------------------------------------------------------------
@@ -509,5 +542,88 @@ func UpdateCouponRemainingUses(coupon *domain.Coupon) error {
 	if err := db.DB.Model(&coupon).Where("id=?", coupon.ID).Updates(&coupon).Error; err != nil {
 		return err
 	}
+	return nil
+}
+
+func CreateWalletAmount(data *domain.Wallet, userId int) error {
+	res := db.DB.Where("user_id=?", userId).First(&data)
+	if res.Error != nil {
+		if res.Error == gorm.ErrRecordNotFound {
+			data.UserID = uint(userId)
+			data.LastTransaction = time.Now()
+			if err := db.DB.Create(&data).Error; err != nil {
+				return err
+			}
+		} else {
+			return res.Error
+		}
+	} else {
+		data.Balance += data.Balance
+		result := db.DB.Save(&data)
+		if result.Error != nil {
+			return result.Error
+		}
+	}
+	return nil
+}
+
+func RefundWalletAmount(orders domain.Order, userId int) error {
+	data := &domain.Wallet{}
+	res := db.DB.Where("user_id=?", userId).First(&data)
+	if res.Error != nil {
+		if res.Error == gorm.ErrRecordNotFound {
+			data.UserID = uint(userId)
+			data.LastTransaction = time.Now()
+			data.Balance = orders.AmountPayable
+			if err := db.DB.Create(&data).Error; err != nil {
+				return err
+			}
+		} else {
+			return res.Error
+		}
+	} else {
+		data.Balance = data.Balance + orders.AmountPayable
+		result := db.DB.Save(&data)
+		if result.Error != nil {
+			return result.Error
+		}
+	}
+	return nil
+}
+
+func UpdateWalletAmouont(orders domain.Order, userId int) error {
+	data := &domain.Wallet{}
+	res := db.DB.Where("user_id=?", userId).First(&data)
+	if res.Error != nil {
+		return res.Error
+	}
+	if data.Balance >= orders.AmountPayable {
+		data.Balance = data.Balance - orders.AmountPayable
+		result := db.DB.Save(&data)
+		if result.Error != nil {
+			return result.Error
+		}
+	} else {
+		return errors.New("Insufficient Balance")
+	}
+	return nil
+}
+
+// Admin - Change Order Status--------------------------------------------------------------------------------------
+func ChangeOrderStatus() error {
+
+	orders := []domain.Order{}
+	if err := db.DB.Where("order_status ILIKE ? AND created_at <= ?", "%Pending status%", time.Now().Add(-4*24*time.Hour)).Find(&orders).Error; err != nil {
+		return err
+	}
+	if len(orders) < 1 {
+		return errors.New("Order will delivered only after 4 days")
+	}
+	for _, order := range orders {
+		if err := db.DB.Model(&order).Update("order_status", "Order Delivered").Error; err != nil {
+			return err
+		}
+	}
+
 	return nil
 }

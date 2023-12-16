@@ -7,6 +7,7 @@ require (
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/joho/godotenv v1.5.1
+	github.com/robfig/cron v1.2.0
 	gopkg.in/mail.v2 v2.3.1
 	gorm.io/driver/postgres v1.5.4
 	gorm.io/gorm v1.25.5
