@@ -387,8 +387,8 @@ func OrderCancel(userId, orderId int) (*domain.Order, error) {
 	if err := db.DB.Where("user_id =? AND booking_id=?", userId, orderId).First(&orders).Error; err != nil {
 		return nil, err
 	}
-	if orders.OrderStatus != "order cancelled" && (orders.OrderStatus == "Pending Status" || orders.OrderStatus == "pending status") {
-		orders.OrderStatus = "order cancelled"
+	if orders.OrderStatus != "order cancelled" && orders.OrderStatus == "Pending status" {
+		orders.OrderStatus = "Order cancelled"
 	} else {
 		return nil, errors.New("Order already cancelled")
 	}
@@ -467,6 +467,9 @@ func ReturnConfirmation(userId, orderId int) (*domain.Order, error) {
 
 // Admin - Coupon----------------------------------------------------------------------------------------------------
 func AddCoupon(coupon *domain.Coupon) error {
+	if coupon.DiscountPercentage > 100 {
+		return errors.New("Coupon not valid")
+	}
 	if err := db.DB.Create(coupon).Error; err != nil {
 		return err
 	}

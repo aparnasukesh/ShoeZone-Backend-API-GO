@@ -475,7 +475,13 @@ func OrderCancel(userId, orderId int) (*domain.Order, error) {
 	if err != nil {
 		return nil, err
 	}
+	if orders.PaymentMethod != "Cash On Delivery" {
+		err := repository.RefundWalletAmount(*orders, userId)
+		if err != nil {
+			return nil, err
+		}
 
+	}
 	return orders, nil
 }
 
@@ -492,7 +498,10 @@ func ReturnConfirmation(userId, orderId int) error {
 	if err != nil {
 		return err
 	}
-	_, orderItems, _ := repository.ViewOrdersByID(userId, orderId)
+	_, orderItems, err := repository.ViewOrdersByID(userId, orderId)
+	if err != nil {
+		return err
+	}
 	productIds, quantities := repository.GetProductIDsFromOrderItems(orderItems)
 
 	err = repository.RefundWalletAmount(*orders, userId)
