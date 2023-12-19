@@ -48,7 +48,6 @@ func Routes(r *gin.Engine) {
 		// User - Profile
 		userAuthGroup.POST("/address", handler.AddAddress)
 		userAuthGroup.GET("/address", handler.ViewAddress)
-
 		userAuthGroup.PATCH("/profile", handler.EditUserProfile)
 		userAuthGroup.GET("/profile/:id", handler.ProfileDetails)
 
