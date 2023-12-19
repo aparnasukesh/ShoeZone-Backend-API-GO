@@ -439,6 +439,82 @@ func DeleteCartItem(ctx *gin.Context) {
 	})
 }
 
+// User - Wish List------------------------------------------------------------------------------------------------
+func AddToWishList(ctx *gin.Context) {
+	authorization := ctx.Request.Header.Get("Authorization")
+	userId, err := usecase.GetUserIDFromToken(authorization)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Invalid User id",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	idstr := ctx.Param("productid")
+	productId, err := strconv.Atoi(idstr)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Product add to wishlist failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	err = usecase.AddToWishList(userId, productId)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Product add to wishlist failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success": true,
+		"Message": "Product add to wishlist successfull",
+		"Error":   false,
+	})
+}
+
+func DeleteWishlistItem(ctx *gin.Context) {
+	authorization := ctx.Request.Header.Get("Authorization")
+	userId, err := usecase.GetUserIDFromToken(authorization)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Delete Item from wish list failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	idstr := ctx.Param("productid")
+	productId, err := strconv.Atoi(idstr)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Delete Item from wish list failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	err = usecase.DeleteWishlistItem(userId, productId)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Delete Item from wish list failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success": true,
+		"Message": "Delete item from wish list successfull",
+		"Error":   false,
+	})
+
+}
+
 // User - Profile--------------------------------------------------------------------------------------------------
 func AddAddress(ctx *gin.Context) {
 	authorization := ctx.Request.Header.Get("Authorization")
@@ -627,7 +703,7 @@ func ViewAddress(ctx *gin.Context) {
 }
 
 // User - Order---------------------------------------------------------------------------------------------------
-func OrderSummary(ctx *gin.Context) {
+func CartItemsOrderSummary(ctx *gin.Context) {
 	authorization := ctx.Request.Header.Get("Authorization")
 	id, err := usecase.GetUserIDFromToken(authorization)
 	if err != nil {
@@ -638,7 +714,7 @@ func OrderSummary(ctx *gin.Context) {
 		})
 		return
 	}
-	res, err := usecase.GetOrderSummary(id)
+	res, err := usecase.GetCartItemsOrderSummary(id)
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"Success": false,

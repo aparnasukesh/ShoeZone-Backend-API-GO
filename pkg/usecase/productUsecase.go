@@ -250,15 +250,32 @@ func DeleteCartItem(id, productID int) error {
 	return nil
 }
 
+// User - Wish List------------------------------------------------------------------------------------------------
+func AddToWishList(userId, productId int) error {
+	err := repository.AddToWishList(userId, productId)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func DeleteWishlistItem(userId, productId int) error {
+	err := repository.DeleteWishlistItem(userId, productId)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // User - Order----------------------------------------------------------------------------------------------------
 
-func GetOrderSummary(userID int) (domain.OrderSummary, error) {
+func GetCartItemsOrderSummary(userID int) (domain.CartItemsOrderSummary, error) {
 	userCartDetails, err := repository.GetCartDetails(userID)
 	if err != nil {
-		return domain.OrderSummary{}, err
+		return domain.CartItemsOrderSummary{}, err
 	}
 
-	orderSummary := util.BuildOrderSummary(userCartDetails)
+	orderSummary := util.BuildCartItemsOrderSummary(userCartDetails)
 	orderSummary.UserID = userID
 
 	return orderSummary, nil

@@ -20,8 +20,8 @@ func CreateCartResponse(response *[]domain.CartResponse, cartProducts []domain.C
 	}
 }
 
-func BuildOrderSummary(userCartDetails []domain.Cart) domain.OrderSummary {
-	var orderSummary domain.OrderSummary
+func BuildCartItemsOrderSummary(userCartDetails []domain.Cart) domain.CartItemsOrderSummary {
+	var orderSummary domain.CartItemsOrderSummary
 	orderSummary.TotalPrice = 0
 
 	for _, cartItem := range userCartDetails {
@@ -99,7 +99,7 @@ func BuildOrder(orderItems []domain.OrderItem, user domain.User, orderItemID, or
 
 }
 
-func BuildOrderByWalletPayment(orderItems []domain.OrderItem, user domain.User, orderItemID, orderID uint, coupon domain.Coupon)domain.Order{
+func BuildOrderByWalletPayment(orderItems []domain.OrderItem, user domain.User, orderItemID, orderID uint, coupon domain.Coupon) domain.Order {
 
 	var orders domain.Order
 	var totalAmount float64 = 0

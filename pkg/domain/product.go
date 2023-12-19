@@ -40,3 +40,11 @@ type CartResponse struct {
 	ProductID int `json:"product_id"`
 	Quantity  int `json:"quantity"`
 }
+
+type WishList struct {
+	gorm.Model
+	UserID          int     `json:"user_id"`
+	ProductID       int     `json:"product_id"`
+	WishListUser    User    `gorm:"foreignkey:UserID"`
+	WishListProduct Product `gorm:"foreignkey:ProductID"`
+}

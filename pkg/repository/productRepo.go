@@ -314,6 +314,37 @@ func DeleteCartItemByUSerID(userId uint) error {
 	return nil
 }
 
+// Wish-List-------------------------------------------------------------------------------------------------------
+
+func AddToWishList(userId, productId int) error {
+	data := &domain.WishList{}
+	res := db.DB.Where("user_id=? AND product_id=?", userId, productId).First(&data)
+	if res.Error != nil {
+		if res.Error == gorm.ErrRecordNotFound {
+			data.UserID = userId
+			data.ProductID = productId
+			result := db.DB.Create(&data)
+			if result.Error != nil {
+				return result.Error
+			}
+		}
+	} else {
+		return errors.New("Product Already Wish listed")
+	}
+	return nil
+}
+
+func DeleteWishlistItem(userId, productId int) error {
+	data := &domain.WishList{}
+	if err := db.DB.Where("user_id= ? AND product_id=?", userId, productId).First(&data).Error; err != nil {
+		return err
+	}
+	if err := db.DB.Delete(&data).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
 // Order-----------------------------------------------------------------------------------------------------------
 
 func CreateOrderItem(orderItems []domain.OrderItem) error {

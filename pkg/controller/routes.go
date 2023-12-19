@@ -45,6 +45,10 @@ func Routes(r *gin.Engine) {
 		userAuthGroup.GET("/cart", handler.CartList)
 		userAuthGroup.DELETE("/cart/:id", handler.DeleteCartItem)
 
+		// User - Wish Lists
+		userAuthGroup.POST("/wishlist/:productid", handler.AddToWishList)
+		userAuthGroup.DELETE("/wishlist/:productid", handler.DeleteWishlistItem)
+
 		// User - Profile
 		userAuthGroup.POST("/address", handler.AddAddress)
 		userAuthGroup.GET("/address", handler.ViewAddress)
@@ -52,7 +56,7 @@ func Routes(r *gin.Engine) {
 		userAuthGroup.GET("/profile/:id", handler.ProfileDetails)
 
 		// User - Order
-		userAuthGroup.GET("/ordersummary", handler.OrderSummary)
+		userAuthGroup.GET("/ordersummary", handler.CartItemsOrderSummary)
 		userAuthGroup.GET("/orders", handler.ViewOrders)
 		userAuthGroup.GET("/order/orderid", handler.ViewOrdersByID)
 		userAuthGroup.PATCH("order/cancel", handler.OrderCancel)

@@ -64,7 +64,7 @@ type OrderProduct struct {
 	TotalAmount float64
 }
 
-type OrderSummary struct {
+type CartItemsOrderSummary struct {
 	UserID     int            `json:"user_id"`
 	TotalPrice float64        `json:"total_price"`
 	Products   []OrderProduct `json:"products"`
