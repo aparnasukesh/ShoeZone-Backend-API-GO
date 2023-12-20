@@ -515,6 +515,34 @@ func DeleteWishlistItem(ctx *gin.Context) {
 
 }
 
+func WishListItems(ctx *gin.Context) {
+	authorization := ctx.Request.Header.Get("Authorization")
+	userId, err := usecase.GetUserIDFromToken(authorization)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Failed to get wishlist items",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	products, err := usecase.WishListItems(userId)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Failed to get wishlist items",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success":  true,
+		"Message":  "List wishlist items successfull",
+		"Error":    false,
+		"Products": products,
+	})
+}
+
 // User - Profile--------------------------------------------------------------------------------------------------
 func AddAddress(ctx *gin.Context) {
 	authorization := ctx.Request.Header.Get("Authorization")
@@ -757,6 +785,45 @@ func OrderItem(ctx *gin.Context) {
 		"Message": "Order Successfull",
 		"Error":   nil,
 	})
+}
+
+func OrderSummary(ctx *gin.Context) {
+	authorization := ctx.Request.Header.Get("Authorization")
+	userId, err := usecase.GetUserIDFromToken(authorization)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Failed to get order summary",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	orderidStr := ctx.DefaultQuery("order_id", "0")
+	orderId, err := strconv.Atoi(orderidStr)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Failed to get order summary",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	orderSummary, err := usecase.OrderSummary(userId, orderId)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Failed to get order summary",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success":       true,
+		"Message":       "Get order summary successfull",
+		"Error":         false,
+		"Order Summary": orderSummary,
+	})
+
 }
 
 func ViewOrders(ctx *gin.Context) {

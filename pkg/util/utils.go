@@ -41,6 +41,28 @@ func BuildCartItemsOrderSummary(userCartDetails []domain.Cart) domain.CartItemsO
 	return orderSummary
 }
 
+func BuildOrderSummary(order []domain.Order, orderitem []domain.OrderItem, userId, orderId int) (domain.OrderSummary, error) {
+	var orderSummary domain.OrderSummary
+	orderSummary.UserID = userId
+	orderSummary.OrderID = uint(orderId)
+	orderSummary.PaymentMethod = order[0].PaymentMethod
+	orderSummary.TotalPrice = order[0].TotalAmount
+	orderSummary.DiscountPrice = order[0].DiscountPrice
+	orderSummary.AmountPayable = order[0].AmountPayable
+
+	for _, orderItem := range orderitem {
+		total_amount := float64(orderItem.Quantity) * orderItem.UnitPrice
+		orderProduct := domain.OrderProduct{
+			ProductName: orderItem.Product.ProductName,
+			Price:       orderItem.UnitPrice,
+			Quantity:    int(orderItem.Quantity),
+			TotalAmount: total_amount,
+		}
+		orderSummary.Products = append(orderSummary.Products, orderProduct)
+	}
+	return orderSummary, nil
+
+}
 func BuildOrderItem(userCartDetails []domain.Cart, userId int) ([]domain.OrderItem, uint, error) {
 	var orderItems []domain.OrderItem
 
@@ -208,4 +230,20 @@ func BuildUserProfileUpdate(updatedUser domain.User, password string) (domain.Us
 	}
 
 	return *user, nil
+}
+
+func BuildWishListResponse(products []domain.WishList) ([]domain.WishListResponse, error) {
+	response := []domain.WishListResponse{}
+
+	for _, product := range products {
+		res := domain.WishListResponse{
+			UserID:      product.UserID,
+			ProductID:   product.ProductID,
+			ProductName: product.WishListProduct.ProductName,
+			Price:       product.WishListProduct.Price,
+		}
+		response = append(response, res)
+	}
+
+	return response, nil
 }

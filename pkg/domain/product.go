@@ -48,3 +48,10 @@ type WishList struct {
 	WishListUser    User    `gorm:"foreignkey:UserID"`
 	WishListProduct Product `gorm:"foreignkey:ProductID"`
 }
+
+type WishListResponse struct {
+	UserID      int
+	ProductID   int
+	ProductName string
+	Price       float64
+}

@@ -345,6 +345,14 @@ func DeleteWishlistItem(userId, productId int) error {
 	return nil
 }
 
+func WishListItems(userId int) ([]domain.WishList, error) {
+	products := []domain.WishList{}
+	if err := db.DB.Where("user_id=?", userId).Preload("WishListProduct").Find(&products).Error; err != nil {
+		return nil, err
+	}
+	return products, nil
+}
+
 // Order-----------------------------------------------------------------------------------------------------------
 
 func CreateOrderItem(orderItems []domain.OrderItem) error {

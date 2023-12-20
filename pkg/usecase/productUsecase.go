@@ -267,6 +267,18 @@ func DeleteWishlistItem(userId, productId int) error {
 	return nil
 }
 
+func WishListItems(userId int) ([]domain.WishListResponse, error) {
+	products, err := repository.WishListItems(userId)
+	if err != nil {
+		return nil, err
+	}
+	response, err := util.BuildWishListResponse(products)
+	if err != nil {
+		return nil, err
+	}
+	return response, nil
+}
+
 // User - Order----------------------------------------------------------------------------------------------------
 
 func GetCartItemsOrderSummary(userID int) (domain.CartItemsOrderSummary, error) {
@@ -353,6 +365,9 @@ func OrderItem(userId int, coupon string) error {
 		return err
 	}
 
+	for i := 0; i < len(productIDs); i++ {
+		repository.DeleteWishlistItem(userId, productIDs[i])
+	}
 	return nil
 
 }
@@ -431,6 +446,20 @@ func WalletPayment(userId int, coupon string) error {
 
 	return nil
 }
+
+func OrderSummary(userId, orderId int) (*domain.OrderSummary, error) {
+	order, orderItem, err := repository.ViewOrdersByID(userId, orderId)
+	if err != nil {
+		return nil, err
+	}
+	ordersummary, err := util.BuildOrderSummary(order, orderItem, userId, orderId)
+	if err != nil {
+		return nil, err
+	}
+	return &ordersummary, nil
+
+}
+
 func ViewOrders(id int) ([]domain.OrderResponse, error) {
 	orderRes := []domain.OrderResponse{}
 	orders, err := repository.ViewOrders(id)
