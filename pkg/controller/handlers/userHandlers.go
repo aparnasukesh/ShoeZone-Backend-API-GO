@@ -65,7 +65,6 @@ func RegisterValidate(ctx *gin.Context) {
 		"Success": true,
 		"Message": "User Registered Successfull",
 		"Error":   nil,
-		//"Data":    userData,
 	})
 }
 
