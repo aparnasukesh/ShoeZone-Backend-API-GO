@@ -70,8 +70,9 @@ func Routes(r *gin.Engine) {
 		// User - Payment
 		payment := userAuthGroup.Group("/payment")
 		{
-			payment.POST("/cod", handler.OrderItem)
-			payment.POST("/wallet", handler.WalletPayment)
+			payment.POST("/cod", handler.OrderCartItems)
+			payment.POST("/wallet", handler.WalletPaymentCartItems)
+			payment.POST("/order/cod", handler.OrderItemByID)
 
 		}
 	}

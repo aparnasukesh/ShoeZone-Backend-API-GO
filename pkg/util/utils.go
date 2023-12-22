@@ -63,7 +63,7 @@ func BuildOrderSummary(order []domain.Order, orderitem []domain.OrderItem, userI
 	return orderSummary, nil
 
 }
-func BuildOrderItem(userCartDetails []domain.Cart, userId int) ([]domain.OrderItem, uint, error) {
+func BuildOrderCartItems(userCartDetails []domain.Cart, userId int) ([]domain.OrderItem, uint, error) {
 	var orderItems []domain.OrderItem
 
 	OrderIdStr, err := GenCaptchaCode()
@@ -94,6 +94,28 @@ func BuildOrderItem(userCartDetails []domain.Cart, userId int) ([]domain.OrderIt
 	return orderItems, uint(orderId), nil
 }
 
+func BuildOrderItemByID(userId, quantity int, product domain.Product) (*domain.OrderItem, uint, error) {
+	orderItem := &domain.OrderItem{}
+	OrderIdStr, err := GenCaptchaCode()
+	if err != nil {
+		return nil, 0, err
+	}
+	orderId, err := strconv.Atoi(OrderIdStr)
+	if err != nil {
+		return nil, 0, err
+	}
+	orderItem.UserID = uint(userId)
+	orderItem.OrderID = uint(orderId)
+	orderItem.ProductID = product.ID
+	orderItem.Quantity = uint(quantity)
+	orderItem.Product = product
+	orderItem.UnitPrice = product.Price
+	orderItem.TotalPrice = float64(quantity) * product.Price
+
+	return orderItem, uint(orderId), nil
+
+}
+
 func BuildOrder(orderItems []domain.OrderItem, user domain.User, orderItemID, orderID uint, coupon domain.Coupon) domain.Order {
 	var orders domain.Order
 	var totalAmount float64 = 0
@@ -120,7 +142,27 @@ func BuildOrder(orderItems []domain.OrderItem, user domain.User, orderItemID, or
 	return orders
 
 }
+func BuildOrderbyProductID(orderItem *domain.OrderItem, user domain.User, orderID, orderId uint, coupon domain.Coupon) domain.Order {
+	var orders domain.Order
+	var discountAmount float64 = 0
+	var amountPayable float64 = 0
+	offerAmount := float64(coupon.DiscountPercentage)
+	discountAmount = (offerAmount / 100) * orderItem.TotalPrice
+	amountPayable = orderItem.TotalPrice - discountAmount
+	orders.UserID = user.ID
+	orders.TotalAmount = orderItem.TotalPrice
+	orders.DiscountPrice = discountAmount
+	orders.AmountPayable = amountPayable
+	orders.CouponName = coupon.Code
+	orders.OrderStatus = "Pending status"
+	orders.AddressID = user.DefaultAddressID
+	orders.OrderDate = time.Now()
+	orders.PaymentMethod = "Cash On Delivery"
+	orders.OrderItemID = orderID
+	orders.BookingID = orderId
 
+	return orders
+}
 func BuildOrderByWalletPayment(orderItems []domain.OrderItem, user domain.User, orderItemID, orderID uint, coupon domain.Coupon) domain.Order {
 
 	var orders domain.Order
