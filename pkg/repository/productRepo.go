@@ -251,6 +251,21 @@ func UpdateProductStockQuantity(productIDs, quantities []int) error {
 	return nil
 }
 
+func UpdateProductStock(productId, quantity int) error {
+	product := &domain.Product{}
+
+	if err := db.DB.Where("id=?", productId).First(&product).Error; err != nil {
+		return err
+	}
+	product.StockQuantity = product.StockQuantity - quantity
+
+	if err := db.DB.Save(&product).Error; err != nil {
+		return err
+	}
+	return nil
+
+}
+
 // Cart-----------------------------------------------------------------------------------------------------------
 
 func AddToCart(cartProduct *domain.Cart, id int) error {
@@ -306,9 +321,17 @@ func GetCartDetails(userID int) ([]domain.Cart, error) {
 	return userCartDetails, nil
 }
 
-func DeleteCartItemByUSerID(userId uint) error {
+func DeleteCartItemByUserID(userId uint) error {
 	cartItem := domain.Cart{}
 	if err := db.DB.Where("user_id= ? ", userId).Delete(&cartItem).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func CheckCartItemByUserIdAndProductId(userId, productId int) error {
+	cartProduct := domain.Cart{}
+	if err := db.DB.Where("user_id=? AND product_id=?", userId, productId).First(&cartProduct).Error; err != nil {
 		return err
 	}
 	return nil
@@ -353,14 +376,29 @@ func WishListItems(userId int) ([]domain.WishList, error) {
 	return products, nil
 }
 
+func CheckItemPresentInWishList(userId, productId int) error {
+	item := &domain.WishList{}
+	if err := db.DB.Where("user_id=? AND product_id=?", userId, productId).First(&item).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
 // Order-----------------------------------------------------------------------------------------------------------
 
-func CreateOrderItem(orderItems []domain.OrderItem) error {
+func CreateOrderCartItems(orderItems []domain.OrderItem) error {
 
 	for _, orderItem := range orderItems {
 		if err := db.DB.Preload("Product").Create(&orderItem).Error; err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+func CreateOrderItems(orderItem domain.OrderItem) error {
+	if err := db.DB.Preload("Product").Create(&orderItem).Error; err != nil {
+		return err
 	}
 	return nil
 }
