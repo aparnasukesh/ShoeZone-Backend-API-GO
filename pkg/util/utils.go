@@ -228,7 +228,6 @@ func BuildOrderItemResponse(orderItemRes []domain.OrderItemResponse, orders []do
 
 func CouponValidate(coupon *domain.Coupon) (*domain.Coupon, error) {
 	currentTime := time.Now()
-
 	if currentTime.Before(coupon.ExpiryDate) == true && coupon.RemainingUses > 0 {
 		return coupon, nil
 	}

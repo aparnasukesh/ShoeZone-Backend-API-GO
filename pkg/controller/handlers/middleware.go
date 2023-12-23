@@ -80,8 +80,8 @@ func AdminAuthRequired(ctx *gin.Context) {
 
 // UserAuthRequired is a middleware to check if the request has user authorization,
 func UserAuthRequired(ctx *gin.Context) {
-	authorization := ctx.Request.Header.Get("Authorization")
 
+	authorization := ctx.Request.Header.Get("Authorization")
 	if authorization == "" {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
 			"Success": false,
@@ -133,5 +133,58 @@ func UserAuthRequired(ctx *gin.Context) {
 		return
 	}
 	ctx.Next()
+}
 
+func UserPaymentAuthorization(ctx *gin.Context) {
+	token, err := ctx.Cookie("UserAuthorization")
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"Success": false,
+			"Message": "Authorization failed",
+			"Error":   err.Error(),
+		})
+		ctx.Abort()
+		return
+	}
+	tokenParts := strings.Split(token, "Bearer ")
+	if len(tokenParts) < 2 {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"Success": false,
+			"Message": "Authorization failed",
+			"Error":   "Bearer token is missing or malformed",
+		})
+		ctx.Abort()
+		return
+	}
+
+	verifiedToken, err := util.VerifyJWT(tokenParts[1])
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"Success": false,
+			"Message": "Authorization failed",
+			"Error":   err.Error(),
+		})
+		ctx.Abort()
+		return
+	}
+	isAdmin, err := util.GetRole(verifiedToken)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"Success": false,
+			"Message": "Authorization failed",
+			"Error":   err.Error(),
+		})
+		ctx.Abort()
+		return
+	}
+	if isAdmin != false {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"Success": false,
+			"Message": "Authorization failed",
+			"Error":   err.Error(),
+		})
+		ctx.Abort()
+		return
+	}
+	ctx.Next()
 }

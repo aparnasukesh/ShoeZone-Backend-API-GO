@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 	"strconv"
+	"text/template"
 
 	"github.com/aparnasukesh/shoezone/pkg/domain"
 	"github.com/aparnasukesh/shoezone/pkg/usecase"
@@ -786,6 +787,66 @@ func OrderCartItems(ctx *gin.Context) {
 	})
 }
 
+//===============================================================================================================
+func OrderCartItemsRazorpay(ctx *gin.Context) {
+	token, err := ctx.Cookie("UserAuthorization")
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"Success": false,
+			"Message": "Order failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+
+	userId, err := usecase.GetUserIDFromToken(token)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Order failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	coupon := ctx.DefaultQuery("coupon_name", "")
+	paymentDetails, err := usecase.OrderCartItemsRazorpay(userId, coupon)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Order failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	temp, err := template.ParseFiles("./pkg/templates/app.html")
+	if err != nil {
+		ctx.JSON(400, gin.H{
+			"Error": err,
+		})
+		return
+	}
+
+	data := map[string]interface{}{
+		"userid":     paymentDetails.UserID,
+		"totalprice": paymentDetails.TotalAmount,
+		"paymentid":  paymentDetails.PaymentID,
+	}
+
+	err = temp.Execute(ctx.Writer, data)
+	if err != nil {
+		ctx.JSON(400, gin.H{
+			"Error": err,
+		})
+	}
+
+	// ctx.HTML(200, "./pkg/templates/app.html", gin.H{
+	// 	"userid":     paymentDetails.UserID,
+	// 	"totalprice": paymentDetails.TotalAmount,
+	// 	"paymentid":  paymentDetails.PaymentID,
+	// })
+}
+
+//===============================================================================================================
 func OrderItemByID(ctx *gin.Context) {
 	authorization := ctx.Request.Header.Get("Authorization")
 	userId, err := usecase.GetUserIDFromToken(authorization)

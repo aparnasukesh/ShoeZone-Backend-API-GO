@@ -115,3 +115,11 @@ type Wallet struct {
 	Balance         float64   `json:"balance"`
 	LastTransaction time.Time `json:"last_transaction"`
 }
+
+// Razorpay
+type RazorPay struct {
+	UserID      int
+	OrderID     int
+	PaymentID   string
+	TotalAmount float64
+}

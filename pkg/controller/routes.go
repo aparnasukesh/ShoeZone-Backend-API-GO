@@ -7,6 +7,8 @@ import (
 )
 
 func Routes(r *gin.Engine) {
+	// r.Use(corsMiddleware())
+	// r.LoadHTMLGlob("*.html")
 
 	userGroup := r.Group("/user")
 	{
@@ -73,10 +75,16 @@ func Routes(r *gin.Engine) {
 			payment.POST("/cod", handler.OrderCartItems)
 			payment.POST("/wallet", handler.WalletPaymentCartItems)
 			payment.POST("/order/cod", handler.OrderItemByID)
-
 		}
 	}
 
+	userPaymentAuth := r.Group("/user")
+	{
+		userPaymentAuth.Use(handler.UserPaymentAuthorization)
+
+		userPaymentAuth.GET("/razorpay", handler.OrderCartItemsRazorpay)
+
+	}
 	adminGroup := r.Group("/admin")
 	{
 		adminGroup.POST("/login", handler.Login)
@@ -122,4 +130,12 @@ func Routes(r *gin.Engine) {
 
 	}
 
+}
+
+func corsMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.Header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		c.Next()
+	}
 }

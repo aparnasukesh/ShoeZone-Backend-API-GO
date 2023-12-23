@@ -455,6 +455,75 @@ func OrderItemByID(userId, productId, quantity int, coupon string) error {
 	return nil
 
 }
+
+func OrderCartItemsRazorpay(userId int, coupon string) (*domain.RazorPay, error) {
+	userCartDetails, err := repository.GetCartDetails(userId)
+	if err != nil {
+		return nil, err
+	}
+
+	orderItem, orderId, err := util.BuildOrderCartItems(userCartDetails, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	err = repository.CreateOrderCartItems(orderItem)
+	if err != nil {
+		return nil, err
+	}
+
+	user, err := repository.GetUserByID(userId)
+	if err != nil {
+		return nil, err
+	}
+	orderID, err := repository.GetOrderItemByUserIdAndOrderId(uint(userId), orderId)
+	if err != nil {
+		return nil, err
+	}
+
+	couponData := &domain.Coupon{}
+	usercoupon := domain.UserCoupon{}
+	validCoupon := &domain.Coupon{}
+
+	if coupon != "" {
+		couponData, err = repository.GetCouponByCouponName(coupon)
+	}
+	if couponData != nil && err == nil {
+		validCoupon, err = util.CouponValidate(couponData)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	err = repository.CheckCouponUsedByUser(userId, validCoupon)
+	if err != nil {
+		usercoupon = util.BuildUserCoupon(userId, *validCoupon)
+		err = repository.CreateUserCoupon(usercoupon)
+		if err != nil {
+			return nil, err
+		}
+		err = repository.UpdateCouponRemainingUses(validCoupon)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		validCoupon.Code = ""
+		validCoupon.DiscountPercentage = 0
+	}
+
+	order := util.BuildOrder(orderItem, *user, orderID, orderId, *validCoupon)
+	err = repository.Order(order)
+	if err != nil {
+		return nil, err
+	}
+
+	return RazorPay(domain.RazorPay{
+		OrderID:     int(order.BookingID),
+		UserID:      userId,
+		TotalAmount: order.AmountPayable,
+	})
+}
+
 func WalletPaymentCartItems(userId int, coupon string) error {
 	userCartDetails, err := repository.GetCartDetails(userId)
 	if err != nil {
