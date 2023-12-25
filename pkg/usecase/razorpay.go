@@ -11,7 +11,7 @@ func RazorPay(paymentDetails domain.RazorPay) (*domain.RazorPay, error) {
 
 	client := razorpay.NewClient("rzp_test_m7lKivrgzyXezp", "9xTriOeqo6SNVBA0eRojnNIi")
 	data := map[string]interface{}{
-		"amount":   50000,
+		"amount":   paymentDetails.TotalAmount,
 		"currency": "INR",
 		"receipt":  "some_receipt_id",
 	}

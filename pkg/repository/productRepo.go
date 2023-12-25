@@ -412,9 +412,43 @@ func GetOrderItemByUserIdAndOrderId(userId, orderId uint) (uint, error) {
 	return orderItems.ID, nil
 }
 
+func OrderItemsByUserIDandOrderTableID(userId, order_TableId int) ([]domain.OrderItem, int, error) {
+	orderItems := []domain.OrderItem{}
+	if err := db.DB.Where("user_id=? AND order_id=?", userId, order_TableId).Find(&orderItems).Error; err != nil {
+		return nil, 0, err
+	}
+	return orderItems, order_TableId, nil
+}
+
 func Order(order domain.Order) error {
 
 	if err := db.DB.Preload("OrderItems").Preload("Address").Create(&order).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func CreateRazorpayPayment(paymentDetails domain.RazorPay) error {
+	data := &domain.RazorPayPayment{}
+	data.UserID = paymentDetails.UserID
+	data.OrderID = paymentDetails.PaymentID
+	data.TotalAmount = paymentDetails.TotalAmount
+	data.PaymentStatus = "Pending"
+	if err := db.DB.Create(&data).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func UpdateRazorpay(userId int, signature, paymentid, orderid string) error {
+	data := &domain.RazorPayPayment{}
+	if err := db.DB.Where("user_id=? AND order_id=?", userId, orderid).First(&data).Error; err != nil {
+		return err
+	}
+	data.PaymentID = paymentid
+	data.PaymentStatus = "Payment Successfull"
+	data.RazorPaySignature = signature
+	if err := db.DB.Save(&data).Error; err != nil {
 		return err
 	}
 	return nil

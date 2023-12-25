@@ -26,13 +26,23 @@
                 </div>
 
                 <div class="form-group mt-3">
-                    <label for="disabledTextInput">Payment ID</label>
+                    <label for="disabledTextInput">Razorpay Order ID</label>
                     <input type="text" class="form-control mt-3" id="paymentid" value="{{.paymentid}}">
                 </div>
 
                 <div class="form-group mt-3">
                     <label for="disabledTextInput">Total Amount</label>
                     <input type="text" class="form-control mt-3" id="total" value="{{.totalprice}}">
+                </div>
+
+                <div class="form-group mt-3">
+                    <label for="disabledTextInput">Coupon</label>
+                    <input type="text" class="form-control mt-3" id="coupon" value="{{.coupon}}">
+                </div>
+
+                <div class="form-group mt-3">
+                    <label for="disabledTextInput">order_id</label>
+                    <input type="text" class="form-control mt-3" id="order_TableId" value="{{.order_TableId}}">
                 </div>
 
             </fieldset>
@@ -55,8 +65,8 @@
         const userid = document.getElementById("userid").value;
         const orderid = document.getElementById("paymentid").value;
         var total = document.getElementById("total").value;
-
-
+        var coupon = document.getElementById("coupon").value;
+        var order_TableId = document.getElementById("order_TableId").value;
 
         var options = {
             "key": "rzp_test_m7lKivrgzyXezp",
@@ -67,7 +77,7 @@
             "image": "https://www.google.com/imgres?imgurl=https%3A%2F%2Fi.pinimg.com%2Foriginals%2F5c%2F00%2Fe5%2F5c00e519ad324b8ae46e6c91bd3bdecc.jpg&imgrefurl=https%3A%2F%2Fwww.pinterest.com%2Fpin%2F686447168179169998%2F&tbnid=-Py1GooPOrH8WM&vet=12ahUKEwjKppKMsJf9AhUH3XMBHdjdAckQMygHegUIARD4AQ..i&docid=jq-QlevZYBOU8M&w=800&h=600&q=electronics%20log&ved=2ahUKEwjKppKMsJf9AhUH3XMBHdjdAckQMygHegUIARD4AQ",
             "order_id": "{{.paymentid}}",
             "handler": function (response) {
-                verifyPayment(response, userid, orderid, total);
+                verifyPayment(response, userid, orderid, total,coupon,order_TableId);
             },
 
             "prefill": {
@@ -101,9 +111,9 @@
         })
 
 
-        function verifyPayment(res, userid, orderid, total) {
+        function verifyPayment(res, userid, orderid, total,coupon, order_TableId) {
 
-            const url = "/user/payment/success?user_id=${userid}&payment_id=${res.razorpay_payment_id}&order_id=${res.razorpay_order_id}&signature=${res.razorpay_signature}&total=${total}";
+            const url = `/user/razorpay/success?user_id=${userid}&payment_id=${res.razorpay_payment_id}&order_id=${res.razorpay_order_id}&signature=${res.razorpay_signature}&total=${total}&coupon=${coupon}&order_TableId=${order_TableId}`;
             fetch(url, {
                 method: 'GET',
             }).then(response => {
@@ -114,9 +124,11 @@
                 }
             })
                 .then(data => {
-                    location.href ="/user/success?id=${res.razorpay_payment_id}";
+                    location.href =`/user/success?id=${res.razorpay_payment_id}`;
                 })
                 .catch(error => {
+                    location.href =`/user/failed?id=${res.razorpay_payment_id}`;
+
                     console.error('Error:', error);
                     location.replace('/failed');
                     alert("error");

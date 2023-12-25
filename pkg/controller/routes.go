@@ -83,8 +83,12 @@ func Routes(r *gin.Engine) {
 		userPaymentAuth.Use(handler.UserPaymentAuthorization)
 
 		userPaymentAuth.GET("/razorpay", handler.OrderCartItemsRazorpay)
+		userPaymentAuth.GET("/razorpay/success", handler.VerifyPayment)
+		userPaymentAuth.GET("/success", handler.RazorpaySuccess)
+		userPaymentAuth.GET("/failed", handler.RazorPayFailed)
 
 	}
+
 	adminGroup := r.Group("/admin")
 	{
 		adminGroup.POST("/login", handler.Login)
