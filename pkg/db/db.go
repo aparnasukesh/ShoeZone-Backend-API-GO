@@ -39,4 +39,5 @@ func DbConnect() {
 	DB.AutoMigrate(&domain.UserCoupon{})
 	DB.AutoMigrate(&domain.Wallet{})
 	DB.AutoMigrate(&domain.WishList{})
+	DB.AutoMigrate(&domain.RazorPayPayment{})
 }

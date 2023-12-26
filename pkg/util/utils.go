@@ -142,6 +142,32 @@ func BuildOrder(orderItems []domain.OrderItem, user domain.User, orderItemID, or
 	return orders
 
 }
+
+func BuildOrderRazorpay(orderItems []domain.OrderItem, user domain.User, orderItemID, orderID uint, coupon domain.Coupon) domain.Order {
+	var orders domain.Order
+	var totalAmount float64 = 0
+	var discountAmount float64 = 0
+	var amountPayable float64 = 0
+	for _, orderItem := range orderItems {
+		totalAmount += orderItem.TotalPrice
+	}
+	offerAmount := float64(coupon.DiscountPercentage)
+	discountAmount = (offerAmount / 100) * totalAmount
+	amountPayable = totalAmount - discountAmount
+	orders.UserID = user.ID
+	orders.TotalAmount = totalAmount
+	orders.DiscountPrice = discountAmount
+	orders.AmountPayable = amountPayable
+	orders.CouponName = coupon.Code
+	orders.OrderStatus = "Pending status"
+	orders.AddressID = user.DefaultAddressID
+	orders.OrderDate = time.Now()
+	orders.PaymentMethod = "Razorpay"
+	orders.OrderItemID = orderItemID
+	orders.BookingID = orderID
+
+	return orders
+}
 func BuildOrderbyProductID(orderItem *domain.OrderItem, user domain.User, orderID, orderId uint, coupon domain.Coupon) domain.Order {
 	var orders domain.Order
 	var discountAmount float64 = 0
@@ -228,7 +254,6 @@ func BuildOrderItemResponse(orderItemRes []domain.OrderItemResponse, orders []do
 
 func CouponValidate(coupon *domain.Coupon) (*domain.Coupon, error) {
 	currentTime := time.Now()
-
 	if currentTime.Before(coupon.ExpiryDate) == true && coupon.RemainingUses > 0 {
 		return coupon, nil
 	}

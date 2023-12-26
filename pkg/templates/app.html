@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+</head>
+
+<body>
+
+    <div class="w-100 d-flex justify-content-center mt-5 pt-5">
+
+        <form class="w-50 pt-5" action="">
+
+            <h1 class="mb-5 text-center">Payment Gateway</h1>
+
+            <fieldset disabled>
+
+                <div class="form-group ">
+                    <label for="disabledTextInput">User ID</label>
+                    <input type="text" class="form-control mt-3" id="userid" value="{{.userid}}">
+                </div>
+
+                <div class="form-group mt-3">
+                    <label for="disabledTextInput">Razorpay Order ID</label>
+                    <input type="text" class="form-control mt-3" id="paymentid" value="{{.paymentid}}">
+                </div>
+
+                <div class="form-group mt-3">
+                    <label for="disabledTextInput">Total Amount</label>
+                    <input type="text" class="form-control mt-3" id="total" value="{{.totalprice}}">
+                </div>
+
+                <div class="form-group mt-3">
+                    <label for="disabledTextInput">Coupon</label>
+                    <input type="text" class="form-control mt-3" id="coupon" value="{{.coupon}}">
+                </div>
+
+                <div class="form-group mt-3">
+                    <label for="disabledTextInput">order_id</label>
+                    <input type="text" class="form-control mt-3" id="order_TableId" value="{{.order_TableId}}">
+                </div>
+
+            </fieldset>
+
+
+            <div class="d-flex justify-content-center">
+                <button type="submit" id="rzp-button1" class="btn btn-primary mt-5 w-50 ">Submit</button>
+            </div>
+
+
+        </form>
+    </div>
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+
+
+    <script>
+
+        const userid = document.getElementById("userid").value;
+        const orderid = document.getElementById("paymentid").value;
+        var total = document.getElementById("total").value;
+        var coupon = document.getElementById("coupon").value;
+        var order_TableId = document.getElementById("order_TableId").value;
+
+        var options = {
+            "key": "rzp_test_m7lKivrgzyXezp",
+            "amount": "{{.total}}",
+            "currency": "INR",
+            "name": "ShoeZone",
+            "description": "Test Transaction",
+            "image": "https://www.google.com/imgres?imgurl=https%3A%2F%2Fi.pinimg.com%2Foriginals%2F5c%2F00%2Fe5%2F5c00e519ad324b8ae46e6c91bd3bdecc.jpg&imgrefurl=https%3A%2F%2Fwww.pinterest.com%2Fpin%2F686447168179169998%2F&tbnid=-Py1GooPOrH8WM&vet=12ahUKEwjKppKMsJf9AhUH3XMBHdjdAckQMygHegUIARD4AQ..i&docid=jq-QlevZYBOU8M&w=800&h=600&q=electronics%20log&ved=2ahUKEwjKppKMsJf9AhUH3XMBHdjdAckQMygHegUIARD4AQ",
+            "order_id": "{{.paymentid}}",
+            "handler": function (response) {
+                verifyPayment(response, userid, orderid, total, coupon, order_TableId);
+            },
+
+            "prefill": {
+
+                "email": "{{.email}}",
+                "contact": "{{.phonenumber}}"
+            },
+            "notes": {
+                "address": "Razorpay Corporate Office"
+            },
+            "theme": {
+                "color": "#3399cc"
+            }
+        };
+
+        var rzp1 = new Razorpay(options);
+
+        rzp1.on('payment.failed', function (response) {
+            alert(response.error.code);
+        });
+
+        document.getElementById('rzp-button1').addEventListener('click', (e) => {
+            e.preventDefault();
+            rzp1.open();
+        })
+
+
+        async function verifyPayment(res, userid, orderid, total, coupon, order_TableId) {
+
+            const url = `/user/razorpay/success?user_id=${userid}&payment_id=${res.razorpay_payment_id}&order_id=${res.razorpay_order_id}&signature=${res.razorpay_signature}&total=${total}&coupon=${coupon}&order_TableId=${order_TableId}`;
+
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                });
+
+                console.log(response)
+
+                if (response.ok) {
+                    const data = await response.json();
+                    location.href = `/user/success?id=${res.razorpay_payment_id}`;
+                } else {
+                    location.href = `/user/failed?id=${res.razorpay_payment_id}`;
+                    console.error('Error:', response.statusText);
+                    location.replace('/failed');
+                    alert("error");
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                location.replace('/failed');
+                alert("error");
+            }
+
+
+
+
+            // const url = `/user/razorpay/success?user_id=${userid}&payment_id=${res.razorpay_payment_id}&order_id=${res.razorpay_order_id}&signature=${res.razorpay_signature}&total=${total}&coupon=${coupon}&order_TableId=${order_TableId}`;
+            // fetch(url, {
+            //     method: 'GET',
+            // }).then(response => {
+            //     if (response) {
+            //         console.log(response)
+            //         return response.json();
+            //     } 
+            // })
+            //     .then(data => {
+            //         location.href =`/user/success?id=${res.razorpay_payment_id}`;
+            //     })
+            //     .catch(error => {
+            //         location.href =`/user/failed?id=${res.razorpay_payment_id}`;
+
+            //         console.error('Error:', error);
+            //         location.replace('/failed');
+            //         alert("error");
+            //     });
+
+
+        }
+
+
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>

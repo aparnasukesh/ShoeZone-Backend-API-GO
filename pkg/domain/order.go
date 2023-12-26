@@ -115,3 +115,22 @@ type Wallet struct {
 	Balance         float64   `json:"balance"`
 	LastTransaction time.Time `json:"last_transaction"`
 }
+
+type RazorPayPayment struct {
+	gorm.Model
+	UserID            int
+	OrderID           string
+	PaymentID         string
+	TotalAmount       float64
+	RazorPaySignature string
+	PaymentStatus     string
+}
+
+// Razorpay
+type RazorPay struct {
+	UserID        int
+	Order_TableID int
+	Coupon        string
+	PaymentID     string
+	TotalAmount   float64
+}

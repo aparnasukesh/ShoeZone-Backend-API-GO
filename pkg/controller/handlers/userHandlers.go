@@ -1,8 +1,11 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
+	"text/template"
 
 	"github.com/aparnasukesh/shoezone/pkg/domain"
 	"github.com/aparnasukesh/shoezone/pkg/usecase"
@@ -786,6 +789,159 @@ func OrderCartItems(ctx *gin.Context) {
 	})
 }
 
+//===============================================================================================================
+func VerifyPayment(ctx *gin.Context) {
+	userID, err := strconv.Atoi(ctx.Query("user_id"))
+	if err != nil {
+		ctx.JSON(400, gin.H{
+			"error": "Invalid user ID",
+		})
+		return
+	}
+
+	orderid := ctx.Query("order_id")
+	paymentid := ctx.Query("payment_id")
+	signature := ctx.Query("signature")
+	totalamount := ctx.Query("total")
+	coupon := ctx.Query("coupon")
+	order_TableId := ctx.Query("order_TableId")
+
+	fmt.Println("order_TableId :", order_TableId)
+	fmt.Println("coupon:", coupon)
+	fmt.Println("user id :", userID)
+	fmt.Println("order id : ", orderid)
+	fmt.Println("payment id  : ", paymentid)
+	fmt.Println("signature: ", signature)
+	fmt.Println("totalamount : ", totalamount)
+
+	orderTableId, err := strconv.Atoi(order_TableId)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Order Failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+
+	err = usecase.RazorpaySuccess(userID, orderTableId, signature, paymentid, orderid, coupon)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Order Failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success": true,
+		"Message": "Order Successfull",
+		"Error":   nil,
+	})
+}
+
+func RazorpaySuccess(ctx *gin.Context) {
+	pid := ctx.Query("id")
+
+	if pid == "" {
+		ctx.JSON(400, gin.H{
+			"Error": "Payment ID is missing",
+		})
+		return
+	}
+
+	temp, err := template.ParseFiles("./pkg/templates/success.html")
+	if err != nil {
+		ctx.JSON(400, gin.H{
+			"Error": err,
+		})
+		return
+	}
+	data := map[string]interface{}{
+		"paymentid": pid,
+	}
+	err = temp.Execute(ctx.Writer, data)
+	if err != nil {
+		ctx.JSON(400, gin.H{
+			"Error": err,
+		})
+	}
+}
+
+func RazorPayFailed(ctx *gin.Context) {
+	temp, err := template.ParseFiles("./pkg/templates/failed.html")
+	if err != nil {
+		ctx.JSON(400, gin.H{
+			"Error": err,
+		})
+		return
+	}
+	err = temp.Execute(ctx.Writer, nil)
+	if err != nil {
+		ctx.JSON(400, gin.H{
+			"Error": err,
+		})
+	}
+}
+
+func OrderCartItemsRazorpay(ctx *gin.Context) {
+	token, err := ctx.Cookie("UserAuthorization")
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"Success": false,
+			"Message": "Order failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+
+	userId, err := usecase.GetUserIDFromToken(token)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Order failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	coupon := ctx.DefaultQuery("coupon_name", "")
+	paymentDetails, err := usecase.OrderCartItemsRazorpay(userId, coupon)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Order failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	temp, err := template.ParseFiles("./pkg/templates/app.html")
+	if err != nil {
+		ctx.JSON(400, gin.H{
+			"Error": err,
+		})
+		return
+	}
+	if strings.Trim(paymentDetails.Coupon, `""`) == "" {
+		paymentDetails.Coupon = "No Coupon Applied"
+	}
+
+	data := map[string]interface{}{
+		"userid":        paymentDetails.UserID,
+		"totalprice":    paymentDetails.TotalAmount,
+		"paymentid":     paymentDetails.PaymentID,
+		"coupon":        paymentDetails.Coupon,
+		"order_TableId": paymentDetails.Order_TableID,
+	}
+	err = temp.Execute(ctx.Writer, data)
+	if err != nil {
+		ctx.JSON(400, gin.H{
+			"Error": err,
+		})
+	}
+}
+
+//===============================================================================================================
 func OrderItemByID(ctx *gin.Context) {
 	authorization := ctx.Request.Header.Get("Authorization")
 	userId, err := usecase.GetUserIDFromToken(authorization)
