@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/aparnasukesh/shoezone/pkg/domain"
@@ -681,6 +682,96 @@ func WalletPaymentCartItems(userId int, coupon string) error {
 		return err
 	}
 
+	for i := 0; i < len(productIDs); i++ {
+		err = repository.CheckItemPresentInWishList(userId, productIDs[i])
+		if err == nil {
+			repository.DeleteWishlistItem(userId, productIDs[i])
+		}
+
+	}
+	return nil
+}
+
+func WalletPaymentOrderItemByID(userId, productId, quantity int, coupon string) error {
+	productDetails, err := repository.GetProductByID(productId)
+	if err != nil {
+		return err
+	}
+	if productDetails.StockQuantity < quantity {
+		return errors.New("Product out of stock")
+	}
+	orderItem, orderId, err := util.BuildOrderItemByID(userId, quantity, *productDetails)
+	if err != nil {
+		return err
+	}
+	err = repository.CreateOrderItems(*orderItem)
+	if err != nil {
+		return err
+	}
+	user, err := repository.GetUserByID(userId)
+	if err != nil {
+		return err
+	}
+
+	orderID, err := repository.GetOrderItemByUserIdAndOrderId(uint(userId), orderId)
+	if err != nil {
+		return nil
+	}
+	couponData := &domain.Coupon{}
+	usercoupon := domain.UserCoupon{}
+	validCoupon := &domain.Coupon{}
+
+	if coupon != "" {
+		couponData, err = repository.GetCouponByCouponName(coupon)
+	}
+	if couponData != nil && err == nil {
+		validCoupon, err = util.CouponValidate(couponData)
+		if err != nil {
+			return err
+		}
+	}
+
+	err = repository.CheckCouponUsedByUser(userId, validCoupon)
+	if err != nil {
+		usercoupon = util.BuildUserCoupon(userId, *validCoupon)
+		err = repository.CreateUserCoupon(usercoupon)
+		if err != nil {
+			return err
+		}
+		err = repository.UpdateCouponRemainingUses(validCoupon)
+		if err != nil {
+			return err
+		}
+	} else {
+		validCoupon.Code = ""
+		validCoupon.DiscountPercentage = 0
+	}
+
+	order := util.BuildOrderByWalletPaymentProductID(orderItem, *user, orderID, orderId, *validCoupon)
+	fmt.Println("======================================", order)
+	repository.UpdateWalletAmouont(order, userId)
+	err = repository.CheckCartItemByUserIdAndProductId(userId, productId)
+	if err == nil {
+		err := repository.DeleteCartItem(userId, productId)
+		if err != nil {
+			return err
+		}
+	}
+	err = repository.Order(order)
+	if err != nil {
+		return err
+	}
+	err = repository.UpdateProductStock(productId, quantity)
+	if err != nil {
+		return err
+	}
+	err = repository.CheckItemPresentInWishList(userId, productId)
+	if err == nil {
+		err = repository.DeleteWishlistItem(userId, productId)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

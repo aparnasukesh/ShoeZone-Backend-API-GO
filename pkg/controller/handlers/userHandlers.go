@@ -789,7 +789,6 @@ func OrderCartItems(ctx *gin.Context) {
 	})
 }
 
-//===============================================================================================================
 func VerifyPayment(ctx *gin.Context) {
 	userID, err := strconv.Atoi(ctx.Query("user_id"))
 	if err != nil {
@@ -941,7 +940,6 @@ func OrderCartItemsRazorpay(ctx *gin.Context) {
 	}
 }
 
-//===============================================================================================================
 func OrderItemByID(ctx *gin.Context) {
 	authorization := ctx.Request.Header.Get("Authorization")
 	userId, err := usecase.GetUserIDFromToken(authorization)
@@ -1265,4 +1263,53 @@ func WalletPaymentCartItems(ctx *gin.Context) {
 		"Message": "Order Successfull",
 		"Error":   nil,
 	})
+}
+
+func WalletPaymentOrderItemByID(ctx *gin.Context) {
+	authorization := ctx.Request.Header.Get("Authorization")
+	userId, err := usecase.GetUserIDFromToken(authorization)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Order failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	productidStr := ctx.DefaultQuery("productid", "0")
+	productId, err := strconv.Atoi(productidStr)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Order failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	coupon := ctx.DefaultQuery("coupon_name", "")
+	quantityStr := ctx.DefaultQuery("quantity", "0")
+	quantity, err := strconv.Atoi(quantityStr)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Order failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	err = usecase.WalletPaymentOrderItemByID(userId, productId, quantity, coupon)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Order failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success": true,
+		"Message": "Order successfull",
+		"Error":   false,
+	})
+
 }
