@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/aparnasukesh/shoezone/pkg/domain"
@@ -484,7 +483,6 @@ func OrderCartItemsRazorpay(userId int, coupon string) (*domain.RazorPay, error)
 	}
 
 	couponData := &domain.Coupon{}
-	usercoupon := domain.UserCoupon{}
 	validCoupon := &domain.Coupon{}
 
 	if coupon != "" {
@@ -499,11 +497,6 @@ func OrderCartItemsRazorpay(userId int, coupon string) (*domain.RazorPay, error)
 
 	err = repository.CheckCouponUsedByUser(userId, validCoupon)
 	if err != nil {
-		usercoupon = util.BuildUserCoupon(userId, *validCoupon)
-		err = repository.CreateUserCoupon(usercoupon)
-		if err != nil {
-			return nil, err
-		}
 		err = repository.UpdateCouponRemainingUses(validCoupon)
 		if err != nil {
 			return nil, err
@@ -558,30 +551,33 @@ func RazorpaySuccess(userId, order_TableId int, signature, paymentid, orderid, c
 	usercoupon := domain.UserCoupon{}
 	validCoupon := &domain.Coupon{}
 
-	if coupon != "No Coupon Applied" {
-		couponData, err = repository.GetCouponByCouponName(coupon)
-	}
-	fmt.Println("=============================================================", couponData, err)
-	if couponData != nil && err == nil {
-		validCoupon, err = util.CouponValidate(couponData)
-		if err != nil {
-			return err
-		}
-	}
-	err = repository.CheckCouponUsedByUser(userId, validCoupon)
-	if err != nil {
-		usercoupon = util.BuildUserCoupon(userId, *validCoupon)
-		err = repository.CreateUserCoupon(usercoupon)
-		if err != nil {
-			return err
-		}
-		err = repository.UpdateCouponRemainingUses(validCoupon)
-		if err != nil {
-			return err
-		}
-	} else {
+	if coupon == "No Coupon Applied" {
 		validCoupon.Code = ""
 		validCoupon.DiscountPercentage = 0
+	} else {
+		couponData, err = repository.GetCouponByCouponName(coupon)
+		if couponData != nil && err == nil {
+			validCoupon, err = util.CouponValidate(couponData)
+			if err != nil {
+				return err
+			}
+		}
+
+		err = repository.CheckCouponUsedByUser(userId, validCoupon)
+		if err != nil {
+			usercoupon = util.BuildUserCoupon(userId, *validCoupon)
+			err = repository.CreateUserCoupon(usercoupon)
+			if err != nil {
+				return err
+			}
+			err = repository.UpdateCouponRemainingUses(validCoupon)
+			if err != nil {
+				return err
+			}
+		} else {
+			validCoupon.Code = ""
+			validCoupon.DiscountPercentage = 0
+		}
 	}
 	order := util.BuildOrderRazorpay(orderItem, *user, orderID, uint(orderId), *validCoupon)
 	err = repository.Order(order)
@@ -601,10 +597,10 @@ func RazorpaySuccess(userId, order_TableId int, signature, paymentid, orderid, c
 	}
 
 	for i := 0; i < len(productIDs); i++ {
+
 		err = repository.CheckItemPresentInWishList(userId, productIDs[i])
 		if err == nil {
 			repository.DeleteWishlistItem(userId, productIDs[i])
-
 		}
 
 	}

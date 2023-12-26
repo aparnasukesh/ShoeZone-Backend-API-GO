@@ -644,6 +644,14 @@ func CheckCouponUsedByUser(userId int, coupon *domain.Coupon) error {
 	return nil
 }
 
+func CheckCouponUsedOrNot(userId int, coupon *domain.Coupon) error {
+	userCoupon := domain.UserCoupon{}
+	if err := db.DB.Where("user_id=?  AND coupon_id=? AND used=?", userId, coupon.ID, true).First(&userCoupon).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
 func CreateUserCoupon(usercoupon domain.UserCoupon) error {
 	if err := db.DB.Create(&usercoupon).Error; err != nil {
 		return err

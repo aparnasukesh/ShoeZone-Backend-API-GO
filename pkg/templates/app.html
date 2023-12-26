@@ -77,7 +77,7 @@
             "image": "https://www.google.com/imgres?imgurl=https%3A%2F%2Fi.pinimg.com%2Foriginals%2F5c%2F00%2Fe5%2F5c00e519ad324b8ae46e6c91bd3bdecc.jpg&imgrefurl=https%3A%2F%2Fwww.pinterest.com%2Fpin%2F686447168179169998%2F&tbnid=-Py1GooPOrH8WM&vet=12ahUKEwjKppKMsJf9AhUH3XMBHdjdAckQMygHegUIARD4AQ..i&docid=jq-QlevZYBOU8M&w=800&h=600&q=electronics%20log&ved=2ahUKEwjKppKMsJf9AhUH3XMBHdjdAckQMygHegUIARD4AQ",
             "order_id": "{{.paymentid}}",
             "handler": function (response) {
-                verifyPayment(response, userid, orderid, total,coupon,order_TableId);
+                verifyPayment(response, userid, orderid, total, coupon, order_TableId);
             },
 
             "prefill": {
@@ -97,12 +97,6 @@
 
         rzp1.on('payment.failed', function (response) {
             alert(response.error.code);
-            alert(response.error.description);
-            alert(response.error.source);
-            alert(response.error.step);
-            alert(response.error.reason);
-            alert(response.error.metadata.order_id);
-            alert(response.error.metadata.payment_id);
         });
 
         document.getElementById('rzp-button1').addEventListener('click', (e) => {
@@ -111,28 +105,56 @@
         })
 
 
-        function verifyPayment(res, userid, orderid, total,coupon, order_TableId) {
+        async function verifyPayment(res, userid, orderid, total, coupon, order_TableId) {
 
             const url = `/user/razorpay/success?user_id=${userid}&payment_id=${res.razorpay_payment_id}&order_id=${res.razorpay_order_id}&signature=${res.razorpay_signature}&total=${total}&coupon=${coupon}&order_TableId=${order_TableId}`;
-            fetch(url, {
-                method: 'GET',
-            }).then(response => {
-                if (response.ok) {
-                    return response.json();
-                } else {
-                    throw new Error('Network response was not ok');
-                }
-            })
-                .then(data => {
-                    location.href =`/user/success?id=${res.razorpay_payment_id}`;
-                })
-                .catch(error => {
-                    location.href =`/user/failed?id=${res.razorpay_payment_id}`;
 
-                    console.error('Error:', error);
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                });
+
+                console.log(response)
+
+                if (response.ok) {
+                    const data = await response.json();
+                    location.href = `/user/success?id=${res.razorpay_payment_id}`;
+                } else {
+                    location.href = `/user/failed?id=${res.razorpay_payment_id}`;
+                    console.error('Error:', response.statusText);
                     location.replace('/failed');
                     alert("error");
-                });
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                location.replace('/failed');
+                alert("error");
+            }
+
+
+
+
+            // const url = `/user/razorpay/success?user_id=${userid}&payment_id=${res.razorpay_payment_id}&order_id=${res.razorpay_order_id}&signature=${res.razorpay_signature}&total=${total}&coupon=${coupon}&order_TableId=${order_TableId}`;
+            // fetch(url, {
+            //     method: 'GET',
+            // }).then(response => {
+            //     if (response) {
+            //         console.log(response)
+            //         return response.json();
+            //     } 
+            // })
+            //     .then(data => {
+            //         location.href =`/user/success?id=${res.razorpay_payment_id}`;
+            //     })
+            //     .catch(error => {
+            //         location.href =`/user/failed?id=${res.razorpay_payment_id}`;
+
+            //         console.error('Error:', error);
+            //         location.replace('/failed');
+            //         alert("error");
+            //     });
+
+
         }
 
 

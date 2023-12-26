@@ -813,9 +813,7 @@ func VerifyPayment(ctx *gin.Context) {
 	fmt.Println("payment id  : ", paymentid)
 	fmt.Println("signature: ", signature)
 	fmt.Println("totalamount : ", totalamount)
-	ctx.JSON(200, gin.H{
-		"msg": "success",
-	})
+
 	orderTableId, err := strconv.Atoi(order_TableId)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
@@ -825,6 +823,7 @@ func VerifyPayment(ctx *gin.Context) {
 		})
 		return
 	}
+
 	err = usecase.RazorpaySuccess(userID, orderTableId, signature, paymentid, orderid, coupon)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -834,10 +833,11 @@ func VerifyPayment(ctx *gin.Context) {
 		})
 		return
 	}
+
 	ctx.JSON(http.StatusOK, gin.H{
 		"Success": true,
 		"Message": "Order Successfull",
-		"Error":   err.Error(),
+		"Error":   nil,
 	})
 }
 
