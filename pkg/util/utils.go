@@ -168,6 +168,7 @@ func BuildOrderRazorpay(orderItems []domain.OrderItem, user domain.User, orderIt
 
 	return orders
 }
+
 func BuildOrderbyProductID(orderItem *domain.OrderItem, user domain.User, orderID, orderId uint, coupon domain.Coupon) domain.Order {
 	var orders domain.Order
 	var discountAmount float64 = 0
