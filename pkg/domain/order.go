@@ -129,6 +129,7 @@ type RazorPayPayment struct {
 // Razorpay
 type RazorPay struct {
 	UserID        int
+	AddressID     int
 	Order_TableID int
 	Coupon        string
 	PaymentID     string

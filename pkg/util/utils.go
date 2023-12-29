@@ -116,7 +116,7 @@ func BuildOrderItemByID(userId, quantity int, product domain.Product) (*domain.O
 
 }
 
-func BuildOrder(orderItems []domain.OrderItem, user domain.User, orderItemID, orderID uint, coupon domain.Coupon) domain.Order {
+func BuildOrder(orderItems []domain.OrderItem, user domain.User, orderItemID, orderID uint, coupon domain.Coupon, addressId int) domain.Order {
 	var orders domain.Order
 	var totalAmount float64 = 0
 	var discountAmount float64 = 0
@@ -133,7 +133,7 @@ func BuildOrder(orderItems []domain.OrderItem, user domain.User, orderItemID, or
 	orders.AmountPayable = amountPayable
 	orders.CouponName = coupon.Code
 	orders.OrderStatus = "Pending status"
-	orders.AddressID = user.DefaultAddressID
+	orders.AddressID = uint(addressId)
 	orders.OrderDate = time.Now()
 	orders.PaymentMethod = "Cash On Delivery"
 	orders.OrderItemID = orderItemID
@@ -143,7 +143,7 @@ func BuildOrder(orderItems []domain.OrderItem, user domain.User, orderItemID, or
 
 }
 
-func BuildOrderRazorpay(orderItems []domain.OrderItem, user domain.User, orderItemID, orderID uint, coupon domain.Coupon) domain.Order {
+func BuildOrderRazorpay(orderItems []domain.OrderItem, user domain.User, orderItemID, orderID uint, coupon domain.Coupon, addressId int) domain.Order {
 	var orders domain.Order
 	var totalAmount float64 = 0
 	var discountAmount float64 = 0
@@ -160,7 +160,7 @@ func BuildOrderRazorpay(orderItems []domain.OrderItem, user domain.User, orderIt
 	orders.AmountPayable = amountPayable
 	orders.CouponName = coupon.Code
 	orders.OrderStatus = "Pending status"
-	orders.AddressID = user.DefaultAddressID
+	orders.AddressID = uint(addressId)
 	orders.OrderDate = time.Now()
 	orders.PaymentMethod = "Razorpay"
 	orders.OrderItemID = orderItemID
@@ -169,7 +169,7 @@ func BuildOrderRazorpay(orderItems []domain.OrderItem, user domain.User, orderIt
 	return orders
 }
 
-func BuildOrderbyProductID(orderItem *domain.OrderItem, user domain.User, orderID, orderId uint, coupon domain.Coupon) domain.Order {
+func BuildOrderbyProductID(orderItem *domain.OrderItem, user domain.User, orderID, orderId uint, coupon domain.Coupon, addressId int) domain.Order {
 	var orders domain.Order
 	var discountAmount float64 = 0
 	var amountPayable float64 = 0
@@ -182,7 +182,7 @@ func BuildOrderbyProductID(orderItem *domain.OrderItem, user domain.User, orderI
 	orders.AmountPayable = amountPayable
 	orders.CouponName = coupon.Code
 	orders.OrderStatus = "Pending status"
-	orders.AddressID = user.DefaultAddressID
+	orders.AddressID = uint(addressId)
 	orders.OrderDate = time.Now()
 	orders.PaymentMethod = "Cash On Delivery"
 	orders.OrderItemID = orderID
@@ -191,7 +191,7 @@ func BuildOrderbyProductID(orderItem *domain.OrderItem, user domain.User, orderI
 	return orders
 }
 
-func BuildOrderByWalletPaymentProductID(orderItem *domain.OrderItem, user domain.User, orderID, orderId uint, coupon domain.Coupon) domain.Order {
+func BuildOrderByWalletPaymentProductID(orderItem *domain.OrderItem, user domain.User, orderID, orderId uint, coupon domain.Coupon, addressId int) domain.Order {
 	var orders domain.Order
 	var discountAmount float64 = 0
 	var amountPayable float64 = 0
@@ -204,7 +204,7 @@ func BuildOrderByWalletPaymentProductID(orderItem *domain.OrderItem, user domain
 	orders.AmountPayable = amountPayable
 	orders.CouponName = coupon.Code
 	orders.OrderStatus = "Pending status"
-	orders.AddressID = user.DefaultAddressID
+	orders.AddressID = uint(addressId)
 	orders.OrderDate = time.Now()
 	orders.PaymentMethod = "Wallet Payment"
 	orders.OrderItemID = orderID
@@ -212,7 +212,7 @@ func BuildOrderByWalletPaymentProductID(orderItem *domain.OrderItem, user domain
 
 	return orders
 }
-func BuildOrderByWalletPayment(orderItems []domain.OrderItem, user domain.User, orderItemID, orderID uint, coupon domain.Coupon) domain.Order {
+func BuildOrderByWalletPayment(orderItems []domain.OrderItem, user domain.User, orderItemID, orderID uint, coupon domain.Coupon, addressId int) domain.Order {
 
 	var orders domain.Order
 	var totalAmount float64 = 0
@@ -230,7 +230,7 @@ func BuildOrderByWalletPayment(orderItems []domain.OrderItem, user domain.User, 
 	orders.AmountPayable = amountPayable
 	orders.CouponName = coupon.Code
 	orders.OrderStatus = "Pending status"
-	orders.AddressID = user.DefaultAddressID
+	orders.AddressID = uint(addressId)
 	orders.OrderDate = time.Now()
 	orders.PaymentMethod = "Wallet Payment"
 	orders.OrderItemID = orderItemID
@@ -310,7 +310,6 @@ func BuildUserProfileUpdate(updatedUser domain.User, password string) (domain.Us
 	user.Phone = updatedUser.Phone
 	user.Email = updatedUser.Email
 	user.Gender = updatedUser.Gender
-	user.DefaultAddressID = updatedUser.DefaultAddressID
 	user.Dateofbirth = updatedUser.Dateofbirth
 
 	if password == "" {

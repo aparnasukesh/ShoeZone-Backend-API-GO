@@ -9,13 +9,12 @@ import (
 )
 
 func CreateUser(userData *domain.User) error {
-	err := db.DB.Create(userData)
+	err := db.DB.Create(&userData)
 	if err != nil {
 		return err.Error
 	}
 	return nil
 }
-
 func FindUserByEmail(userData *domain.User) (*domain.User, error) {
 	dbData := &domain.User{}
 	result := db.DB.Where("email = ?", userData.Email).First(dbData)
@@ -46,7 +45,7 @@ func GetUsers() (*[]domain.User, error) {
 }
 func GetUserByID(id int) (*domain.User, error) {
 	userData := domain.User{}
-	res := db.DB.Table("users").Select("id,created_at,updated_at,deleted_at,username,email,phone,isverified,isadmin,dateofbirth,gender,default_address_id").Where("id= ?", id).First(&userData)
+	res := db.DB.Table("users").Select("id,created_at,updated_at,deleted_at,username,email,phone,isverified,isadmin,dateofbirth,gender").Where("id= ?", id).First(&userData)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -128,6 +127,14 @@ func ViewAddress(id int) ([]domain.Address, error) {
 		return nil, err
 	}
 	return userAdd, nil
+}
+
+func CheckValidAddress(userId, addressId int) error {
+	address := domain.Address{}
+	if err := db.DB.Where("id=? AND user_id=?", addressId, userId).First(&address).Error; err != nil {
+		return err
+	}
+	return nil
 }
 
 func FindUserByEmailResetPassword(email string) (*domain.User, error) {
