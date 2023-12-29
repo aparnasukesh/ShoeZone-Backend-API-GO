@@ -33,7 +33,7 @@ func RegisterValidate(userData *domain.User) error {
 	enterdOtp := userData.Otp
 	res, err := repository.FindUserByEmail(userData)
 	if err != nil {
-		return err
+		return errors.New("Invalid Email address")
 	}
 
 	if userData.Email == res.Email && enterdOtp == res.Otp {
@@ -129,8 +129,13 @@ func AddAddress(userAdd *domain.Address, id int) error {
 }
 
 func EditUserProfile(user domain.UserProfileUpdate, id int) (*domain.UserProfileUpdate, error) {
-	password := user.Password
-	user.Password = util.HashPassword(user.Password)
+	var password string
+	if user.Password != "" {
+		password = user.Password
+
+		user.Password = util.HashPassword(user.Password)
+	}
+
 	updatedUser, err := repository.EditUserProfile(user, id)
 	if err != nil {
 		return nil, err

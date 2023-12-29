@@ -773,7 +773,16 @@ func OrderCartItems(ctx *gin.Context) {
 		return
 	}
 	coupon := ctx.DefaultQuery("coupon_name", "")
-	err = usecase.OrderCartItems(id, coupon)
+	address := ctx.DefaultQuery("address_id", "0")
+	addressId, err := strconv.Atoi(address)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Order failed",
+			"Error":   err.Error(),
+		})
+	}
+	err = usecase.OrderCartItems(id, addressId, coupon)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"Success": false,
@@ -791,6 +800,14 @@ func OrderCartItems(ctx *gin.Context) {
 
 func VerifyPayment(ctx *gin.Context) {
 	userID, err := strconv.Atoi(ctx.Query("user_id"))
+	if err != nil {
+		ctx.JSON(400, gin.H{
+			"error": "Invalid user ID",
+		})
+		return
+	}
+
+	addressID, err := strconv.Atoi(ctx.Query("addressid"))
 	if err != nil {
 		ctx.JSON(400, gin.H{
 			"error": "Invalid user ID",
@@ -822,8 +839,7 @@ func VerifyPayment(ctx *gin.Context) {
 		})
 		return
 	}
-
-	err = usecase.RazorpaySuccess(userID, orderTableId, signature, paymentid, orderid, coupon)
+	err = usecase.RazorpaySuccess(userID, orderTableId, signature, paymentid, orderid, coupon, addressID)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"Success": false,
@@ -905,7 +921,16 @@ func OrderCartItemsRazorpay(ctx *gin.Context) {
 		return
 	}
 	coupon := ctx.DefaultQuery("coupon_name", "")
-	paymentDetails, err := usecase.OrderCartItemsRazorpay(userId, coupon)
+	address := ctx.DefaultQuery("address_id", "0")
+	addressId, err := strconv.Atoi(address)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Order failed",
+			"Error":   err.Error(),
+		})
+	}
+	paymentDetails, err := usecase.OrderCartItemsRazorpay(userId, coupon, addressId)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"Success": false,
@@ -927,11 +952,13 @@ func OrderCartItemsRazorpay(ctx *gin.Context) {
 
 	data := map[string]interface{}{
 		"userid":        paymentDetails.UserID,
+		"address_id":    paymentDetails.AddressID,
 		"totalprice":    paymentDetails.TotalAmount,
 		"paymentid":     paymentDetails.PaymentID,
 		"coupon":        paymentDetails.Coupon,
 		"order_TableId": paymentDetails.Order_TableID,
 	}
+
 	err = temp.Execute(ctx.Writer, data)
 	if err != nil {
 		ctx.JSON(400, gin.H{
@@ -972,7 +999,16 @@ func OrderItemByID(ctx *gin.Context) {
 		})
 		return
 	}
-	err = usecase.OrderItemByID(userId, productId, quantity, coupon)
+	address := ctx.DefaultQuery("address_id", "0")
+	addressId, err := strconv.Atoi(address)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Order failed",
+			"Error":   err.Error(),
+		})
+	}
+	err = usecase.OrderItemByID(userId, productId, quantity, coupon, addressId)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"Success": false,
@@ -1163,12 +1199,12 @@ func ViewOrderItemsByUserID(ctx *gin.Context) {
 }
 
 func OrderCancel(ctx *gin.Context) {
-	authorization := ctx.Request.Header.Get("Authorization")
-	id, err := usecase.GetUserIDFromToken(authorization)
+	userIdstr := ctx.DefaultQuery("user_id", "0")
+	userId, err := strconv.Atoi(userIdstr)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"Success": false,
-			"Message": "Order Cancellation failed",
+			"Message": "View Order Failed",
 			"Error":   err.Error(),
 		})
 		return
@@ -1183,7 +1219,7 @@ func OrderCancel(ctx *gin.Context) {
 		})
 		return
 	}
-	orders, err := usecase.OrderCancel(id, orderId)
+	orders, err := usecase.OrderCancel(userId, orderId)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"Success": false,
@@ -1249,7 +1285,16 @@ func WalletPaymentCartItems(ctx *gin.Context) {
 		return
 	}
 	coupon := ctx.DefaultQuery("coupon_name", "")
-	err = usecase.WalletPaymentCartItems(id, coupon)
+	address := ctx.DefaultQuery("address_id", "0")
+	addressId, err := strconv.Atoi(address)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Order failed",
+			"Error":   err.Error(),
+		})
+	}
+	err = usecase.WalletPaymentCartItems(id, coupon, addressId)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"Success": false,
@@ -1297,7 +1342,16 @@ func WalletPaymentOrderItemByID(ctx *gin.Context) {
 		})
 		return
 	}
-	err = usecase.WalletPaymentOrderItemByID(userId, productId, quantity, coupon)
+	address := ctx.DefaultQuery("address_id", "0")
+	addressId, err := strconv.Atoi(address)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Order failed",
+			"Error":   err.Error(),
+		})
+	}
+	err = usecase.WalletPaymentOrderItemByID(userId, productId, quantity, coupon, addressId)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"Success": false,

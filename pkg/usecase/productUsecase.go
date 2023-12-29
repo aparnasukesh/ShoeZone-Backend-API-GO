@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/aparnasukesh/shoezone/pkg/domain"
@@ -294,7 +293,7 @@ func GetCartItemsOrderSummary(userID int) (domain.CartItemsOrderSummary, error) 
 	return orderSummary, nil
 }
 
-func OrderCartItems(userId int, coupon string) error {
+func OrderCartItems(userId, addressId int, coupon string) error {
 	userCartDetails, err := repository.GetCartDetails(userId)
 	if err != nil {
 		return err
@@ -349,7 +348,13 @@ func OrderCartItems(userId int, coupon string) error {
 		validCoupon.Code = ""
 		validCoupon.DiscountPercentage = 0
 	}
-	order := util.BuildOrder(orderItem, *user, orderID, orderId, *validCoupon)
+
+	err = repository.CheckValidAddress(userId, addressId)
+	if err != nil {
+		return errors.New("Enter a valid address or enter a new address")
+	}
+
+	order := util.BuildOrder(orderItem, *user, orderID, orderId, *validCoupon, addressId)
 	err = repository.Order(order)
 	if err != nil {
 		return err
@@ -373,7 +378,7 @@ func OrderCartItems(userId int, coupon string) error {
 
 }
 
-func OrderItemByID(userId, productId, quantity int, coupon string) error {
+func OrderItemByID(userId, productId, quantity int, coupon string, addressId int) error {
 	productDetails, err := repository.GetProductByID(productId)
 	if err != nil {
 		return err
@@ -429,7 +434,12 @@ func OrderItemByID(userId, productId, quantity int, coupon string) error {
 		validCoupon.DiscountPercentage = 0
 	}
 
-	order := util.BuildOrderbyProductID(orderItem, *user, orderID, orderId, *validCoupon)
+	err = repository.CheckValidAddress(userId, addressId)
+	if err != nil {
+		return errors.New("Enter a valid address or enter a new address")
+	}
+
+	order := util.BuildOrderbyProductID(orderItem, *user, orderID, orderId, *validCoupon, addressId)
 	err = repository.CheckCartItemByUserIdAndProductId(userId, productId)
 	if err == nil {
 		err := repository.DeleteCartItem(userId, productId)
@@ -458,7 +468,7 @@ func OrderItemByID(userId, productId, quantity int, coupon string) error {
 }
 
 // User - Order - Razorpay------------------------------------------------------------------------------------------
-func OrderCartItemsRazorpay(userId int, coupon string) (*domain.RazorPay, error) {
+func OrderCartItemsRazorpay(userId int, coupon string, addressId int) (*domain.RazorPay, error) {
 	userCartDetails, err := repository.GetCartDetails(userId)
 	if err != nil {
 		return nil, err
@@ -507,9 +517,15 @@ func OrderCartItemsRazorpay(userId int, coupon string) (*domain.RazorPay, error)
 		validCoupon.DiscountPercentage = 0
 	}
 
-	order := util.BuildOrderRazorpay(orderItem, *user, orderItemID, orderId, *validCoupon)
+	err = repository.CheckValidAddress(userId, addressId)
+	if err != nil {
+		return nil, errors.New("Enter a valid address or enter a new address")
+	}
+
+	order := util.BuildOrderRazorpay(orderItem, *user, orderItemID, orderId, *validCoupon, addressId)
 	paymentDetails := domain.RazorPay{
 		UserID:        userId,
+		AddressID:     addressId,
 		Order_TableID: int(orderId),
 		Coupon:        coupon,
 		TotalAmount:   order.AmountPayable,
@@ -525,7 +541,7 @@ func OrderCartItemsRazorpay(userId int, coupon string) (*domain.RazorPay, error)
 
 }
 
-func RazorpaySuccess(userId, order_TableId int, signature, paymentid, orderid, coupon string) error {
+func RazorpaySuccess(userId, order_TableId int, signature, paymentid, orderid, coupon string, addressID int) error {
 	err := repository.UpdateRazorpay(userId, signature, paymentid, orderid)
 	if err != nil {
 		return err
@@ -580,7 +596,8 @@ func RazorpaySuccess(userId, order_TableId int, signature, paymentid, orderid, c
 			validCoupon.DiscountPercentage = 0
 		}
 	}
-	order := util.BuildOrderRazorpay(orderItem, *user, orderID, uint(orderId), *validCoupon)
+
+	order := util.BuildOrderRazorpay(orderItem, *user, orderID, uint(orderId), *validCoupon, addressID)
 	err = repository.Order(order)
 	if err != nil {
 		return err
@@ -610,7 +627,7 @@ func RazorpaySuccess(userId, order_TableId int, signature, paymentid, orderid, c
 }
 
 // User - Order - Wallet Payment----------------------------------------------------------------------------------
-func WalletPaymentCartItems(userId int, coupon string) error {
+func WalletPaymentCartItems(userId int, coupon string, addressId int) error {
 	userCartDetails, err := repository.GetCartDetails(userId)
 	if err != nil {
 		return err
@@ -665,7 +682,13 @@ func WalletPaymentCartItems(userId int, coupon string) error {
 		validCoupon.Code = ""
 		validCoupon.DiscountPercentage = 0
 	}
-	order := util.BuildOrderByWalletPayment(orderItem, *user, orderID, orderId, *validCoupon)
+
+	err = repository.CheckValidAddress(userId, addressId)
+	if err != nil {
+		return errors.New("Enter a valid address or enter a new address")
+	}
+
+	order := util.BuildOrderByWalletPayment(orderItem, *user, orderID, orderId, *validCoupon, addressId)
 	err = repository.Order(order)
 	if err != nil {
 		return err
@@ -692,7 +715,7 @@ func WalletPaymentCartItems(userId int, coupon string) error {
 	return nil
 }
 
-func WalletPaymentOrderItemByID(userId, productId, quantity int, coupon string) error {
+func WalletPaymentOrderItemByID(userId, productId, quantity int, coupon string, addressId int) error {
 	productDetails, err := repository.GetProductByID(productId)
 	if err != nil {
 		return err
@@ -747,8 +770,13 @@ func WalletPaymentOrderItemByID(userId, productId, quantity int, coupon string) 
 		validCoupon.DiscountPercentage = 0
 	}
 
-	order := util.BuildOrderByWalletPaymentProductID(orderItem, *user, orderID, orderId, *validCoupon)
-	fmt.Println("======================================", order)
+	err = repository.CheckValidAddress(userId, addressId)
+	if err != nil {
+		return errors.New("Enter a valid address or enter a new address")
+	}
+
+	order := util.BuildOrderByWalletPaymentProductID(orderItem, *user, orderID, orderId, *validCoupon, addressId)
+
 	repository.UpdateWalletAmouont(order, userId)
 	err = repository.CheckCartItemByUserIdAndProductId(userId, productId)
 	if err == nil {
