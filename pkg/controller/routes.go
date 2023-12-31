@@ -120,6 +120,10 @@ func Routes(r *gin.Engine) {
 		adminGroup.PUT("/product/:id", handler.UpdateProduct)
 		adminGroup.DELETE("/product/:id", handler.DeleteProduct)
 
+		// Product Image Upload
+		adminGroup.PATCH("/product/upload/:id", handler.ProductImageUpload)
+		adminGroup.GET("/product/image/view/:id", handler.ProductImageViewByID)
+
 		// Order Management
 		adminGroup.GET("/orders/:id", handler.ViewOrdersByUserID)
 		adminGroup.GET("/orders/orderid/:id", handler.ViewOrderItemsByUserID)

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"path/filepath"
 	"strconv"
 
 	"github.com/aparnasukesh/shoezone/pkg/domain"
@@ -331,6 +332,92 @@ func DeleteProduct(ctx *gin.Context) {
 		"Success": true,
 		"Message": "Product successfully deleted",
 		"Error":   nil,
+	})
+}
+
+func ProductImageUpload(ctx *gin.Context) {
+	idstr := ctx.Param("id")
+	id, err := strconv.Atoi(idstr)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Image uplaod failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+
+	file, err := ctx.FormFile("image")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Image Upload failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+
+	filename := strconv.FormatInt(int64(file.Size), 10) + filepath.Ext(file.Filename)
+	uploadPath := "uploads/" + filename
+
+	err = ctx.SaveUploadedFile(file, uploadPath)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Image Upload failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	err = usecase.ProductImageUpload(filename, uploadPath, id)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Image upload failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success": true,
+		"Message": "Image upload successfully",
+		"Error":   false,
+	})
+}
+
+func ProductImageViewByID(ctx *gin.Context) {
+	idStr := ctx.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Image view failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	path, err := usecase.ProductImageViewByID(id)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Image view failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	if path != "" {
+		ctx.File(path)
+	} else {
+		ctx.JSON(http.StatusNoContent, gin.H{
+			"Success": true,
+			"Message": "No image uploaded",
+			"Error":   false,
+		})
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success": true,
+		"Message": "Image view successfull",
+		"Error":   false,
 	})
 }
 

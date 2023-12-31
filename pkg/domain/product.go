@@ -14,7 +14,8 @@ type Product struct {
 	ProductBrandID    int      `json:"brand_id"`
 	ProductCategory   Category `gorm:"foreignkey:ProductCategoryID"`
 	ProductBrand      Brand    `gorm:"foreignkey:ProductBrandID"`
-	ProductImage      string   `json:"image" validate:"required"`
+	ProductImageName  string   `json:"image_name"`
+	ProductImagePath  string   `json:"image_path"`
 }
 
 type Category struct {

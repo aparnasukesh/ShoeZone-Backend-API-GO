@@ -123,6 +123,22 @@ func DeleteProduct(id int) error {
 	return nil
 }
 
+func ProductImageUpload(filename, uploadPath string, id int) error {
+	err := repository.ProductImageUpload(filename, uploadPath, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func ProductImageViewByID(id int) (string, error) {
+	path, err := repository.ProductImageViewByID(id)
+	if err != nil {
+		return "", err
+	}
+	return path, nil
+}
+
 // User- Products---------------------------------------------------------------------
 
 func GetProducts(limit, offset int) ([]domain.Product, error) {

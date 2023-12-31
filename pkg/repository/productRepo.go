@@ -137,6 +137,30 @@ func DeleteProduct(id int) error {
 	return nil
 }
 
+func ProductImageUpload(filename, uploadPath string, id int) error {
+	product := domain.Product{}
+	if err := db.DB.Where("id=?", id).First(&product).Error; err != nil {
+		return err
+	}
+	product.ProductImageName = filename
+	product.ProductImagePath = uploadPath
+
+	if err := db.DB.Save(&product).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func ProductImageViewByID(id int) (string, error) {
+	product := domain.Product{}
+	if err := db.DB.Where("id=?", id).First(&product).Error; err != nil {
+
+		return "", err
+	}
+	return product.ProductImagePath, nil
+
+}
+
 func GetProducts(limit, offset int) ([]domain.Product, error) {
 	product := []domain.Product{}
 
