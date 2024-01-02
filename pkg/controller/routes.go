@@ -7,8 +7,6 @@ import (
 )
 
 func Routes(r *gin.Engine) {
-	// r.Use(corsMiddleware())
-	// r.LoadHTMLGlob("*.html")
 
 	userGroup := r.Group("/user")
 	{
@@ -21,6 +19,7 @@ func Routes(r *gin.Engine) {
 		userGroup.GET("/products", handler.GetProducts)
 		userGroup.GET("/product/:id", handler.GetProductByID)
 		userGroup.GET("/product", handler.GetProductByName)
+		userGroup.GET("/product/image/view/:id", handler.ProductImageViewByID)
 
 		// User - Brands - Products
 		userGroup.GET("/brands", handler.GetBrandsUser)
@@ -56,13 +55,13 @@ func Routes(r *gin.Engine) {
 		userAuthGroup.POST("/address", handler.AddAddress)
 		userAuthGroup.GET("/address", handler.ViewAddress)
 		userAuthGroup.PATCH("/profile", handler.EditUserProfile)
-		userAuthGroup.GET("/profile/:id", handler.ProfileDetails)
+		userAuthGroup.GET("/profile", handler.ProfileDetails)
 
 		// User - Order
 		userAuthGroup.GET("/cart/order/summary", handler.CartItemsOrderSummary)
 		userAuthGroup.GET("/orders", handler.ViewOrders)
 		userAuthGroup.GET("/order/orderid", handler.ViewOrdersByID)
-		userAuthGroup.PATCH("order/cancel", handler.OrderCancel)
+		userAuthGroup.PATCH("/order/cancel", handler.OrderCancel)
 		userAuthGroup.GET("/order/summary", handler.OrderSummary)
 		userAuthGroup.PATCH("/order/return", handler.OrderReturn)
 
@@ -127,7 +126,7 @@ func Routes(r *gin.Engine) {
 		// Order Management
 		adminGroup.GET("/orders/:id", handler.ViewOrdersByUserID)
 		adminGroup.GET("/orders/orderid/:id", handler.ViewOrderItemsByUserID)
-		adminGroup.PATCH("order/cancel", handler.OrderCancel)
+		adminGroup.PATCH("/order/cancel", handler.AdminOrderCancel)
 		adminGroup.PATCH("/orderstatus", handler.ChangeOrderStatus)
 		adminGroup.PATCH("/order/return", handler.ReturnConfirmation)
 
@@ -139,12 +138,4 @@ func Routes(r *gin.Engine) {
 
 	}
 
-}
-
-func corsMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", "*")
-		c.Header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-		c.Next()
-	}
 }

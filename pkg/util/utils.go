@@ -336,3 +336,15 @@ func BuildWishListResponse(products []domain.WishList) ([]domain.WishListRespons
 
 	return response, nil
 }
+
+func BuildProfileDetails(profile *domain.UserProfileUpdate) *domain.ProfileDetails {
+	profileDetails := domain.ProfileDetails{}
+
+	profileDetails.Username = profile.Username
+	profileDetails.Phone = profile.Phone
+	profileDetails.Email = profile.Email
+	profileDetails.Dateofbirth = profile.Dateofbirth
+	profileDetails.Gender = profile.Gender
+
+	return &profileDetails
+}

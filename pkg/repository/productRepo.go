@@ -241,7 +241,7 @@ func GetProductByCategoryName(id int) ([]domain.Product, error) {
 	return product, nil
 }
 
-func CheckProductQuantity(cartProduct *domain.Cart) (bool, error) {
+func CheckProductQuantity(cartProduct domain.Cart) (bool, error) {
 	product := domain.Product{}
 	if err := db.DB.Where("id=?", cartProduct.ProductID).First(&product).Error; err != nil {
 		return false, err
@@ -292,8 +292,9 @@ func UpdateProductStock(productId, quantity int) error {
 
 // Cart-----------------------------------------------------------------------------------------------------------
 
-func AddToCart(cartProduct *domain.Cart, id int) error {
-	res := db.DB.Where("user_id = ? AND product_id = ?", id, cartProduct.ProductID).First(&cartProduct)
+func AddToCart(cartProduct domain.Cart, id int) error {
+	cartItem := domain.Cart{}
+	res := db.DB.Where("user_id = ? AND product_id = ?", id, cartProduct.ProductID).First(&cartItem)
 
 	if res.Error != nil {
 		if res.Error == gorm.ErrRecordNotFound {
@@ -306,8 +307,8 @@ func AddToCart(cartProduct *domain.Cart, id int) error {
 			return res.Error
 		}
 	} else {
-		cartProduct.Quantity += cartProduct.Quantity
-		result := db.DB.Save(&cartProduct)
+		cartItem.Quantity = cartProduct.Quantity + cartItem.Quantity
+		result := db.DB.Save(&cartItem)
 		if result.Error != nil {
 			return result.Error
 		}
@@ -372,7 +373,7 @@ func AddToWishList(userId, productId int) error {
 			data.ProductID = productId
 			result := db.DB.Create(&data)
 			if result.Error != nil {
-				return result.Error
+				return errors.New("Product not found")
 			}
 		}
 	} else {
