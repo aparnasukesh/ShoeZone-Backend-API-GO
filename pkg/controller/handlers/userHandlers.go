@@ -1237,7 +1237,7 @@ func OrderCancel(ctx *gin.Context) {
 }
 
 func AdminOrderCancel(ctx *gin.Context) {
-	userIdStr := ctx.DefaultQuery("booking_id", "0")
+	userIdStr := ctx.DefaultQuery("user_id", "0")
 	userId, err := strconv.Atoi(userIdStr)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
