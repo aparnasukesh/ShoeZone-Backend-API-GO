@@ -126,7 +126,7 @@ func Routes(r *gin.Engine) {
 		// Order Management
 		adminGroup.GET("/orders/:id", handler.ViewOrdersByUserID)
 		adminGroup.GET("/orders/orderid/:id", handler.ViewOrderItemsByUserID)
-		adminGroup.PATCH("/order/cancel", handler.OrderCancel)
+		adminGroup.PATCH("/order/cancel", handler.AdminOrderCancel)
 		adminGroup.PATCH("/orderstatus", handler.ChangeOrderStatus)
 		adminGroup.PATCH("/order/return", handler.ReturnConfirmation)
 
