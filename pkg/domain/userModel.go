@@ -28,14 +28,12 @@ type Address struct {
 
 // Create a new struct for updating user profile without Isverified, Isadmin, and Otp fields
 type UserProfileUpdate struct {
-	Username         string  `json:"username" validate:"required,min=8,max=24"`
-	Password         string  `json:"password" validate:"required,min=8,max=16"`
-	Phone            string  `json:"phone" validate:"required,len=10"`
-	Email            string  `json:"email" validate:"email,required"`
-	Dateofbirth      string  `json:"dateofbirth"`
-	Gender           string  `json:"gender"`
-	DefaultAddressID uint    `json:"default_address_id"`
-	DefaultAddress   Address `gorm:"foreignKey:DefaultAddressID"`
+	Username    string `json:"username" validate:"required,min=8,max=24"`
+	Password    string `json:"password" validate:"required,min=8,max=16"`
+	Phone       string `json:"phone" validate:"required,len=10"`
+	Email       string `json:"email" validate:"email,required"`
+	Dateofbirth string `json:"dateofbirth"`
+	Gender      string `json:"gender"`
 }
 
 type ResetPassword struct {
