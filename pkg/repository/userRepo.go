@@ -115,7 +115,7 @@ func EditUserProfile(updateuser domain.UserProfileUpdate, id int) (*domain.User,
 
 func ProfileDetails(id int) (*domain.UserProfileUpdate, error) {
 	userDetails := domain.UserProfileUpdate{}
-	if err := db.DB.Model(&domain.User{}).Where("id=?", id).Preload("DefaultAddress").First(&userDetails).Error; err != nil {
+	if err := db.DB.Model(&domain.User{}).Where("id=?", id).First(&userDetails).Error; err != nil {
 		return nil, err
 	}
 	return &userDetails, nil
