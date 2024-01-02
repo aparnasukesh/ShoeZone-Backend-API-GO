@@ -235,7 +235,7 @@ func GetUserIDFromToken(authorization string) (int, error) {
 
 // User - Cart ---------------------------------------------------------------------------------------------------
 
-func AddToCart(cartProduct *domain.Cart, id int) error {
+func AddToCart(cartProduct domain.Cart, id int) error {
 	res, err := repository.CheckProductQuantity(cartProduct)
 	if res == false || err != nil {
 		return err

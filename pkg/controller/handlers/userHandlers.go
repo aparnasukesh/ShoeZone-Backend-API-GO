@@ -278,16 +278,16 @@ func GetCategoriesUser(ctx *gin.Context) {
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"Success": false,
-			"Message": "Brands not found",
+			"Message": "Categoriess not found",
 			"Error":   err.Error(),
 		})
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{
-		"Success": true,
-		"Message": "Brands found",
-		"Error":   nil,
-		"Brands":  categories,
+		"Success":    true,
+		"Message":    "Categories found",
+		"Error":      nil,
+		"Categories": categories,
 	})
 }
 
@@ -352,7 +352,7 @@ func AddToCart(ctx *gin.Context) {
 		})
 		return
 	}
-	err = usecase.AddToCart(&cartProduct, id)
+	err = usecase.AddToCart(cartProduct, id)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"Success": false,
@@ -1199,12 +1199,12 @@ func ViewOrderItemsByUserID(ctx *gin.Context) {
 }
 
 func OrderCancel(ctx *gin.Context) {
-	userIdstr := ctx.DefaultQuery("user_id", "0")
-	userId, err := strconv.Atoi(userIdstr)
+	authorization := ctx.Request.Header.Get("Authorization")
+	userId, err := usecase.GetUserIDFromToken(authorization)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"Success": false,
-			"Message": "View Order Failed",
+			"Message": "Order Cancellation failed",
 			"Error":   err.Error(),
 		})
 		return
@@ -1214,7 +1214,7 @@ func OrderCancel(ctx *gin.Context) {
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"Success": false,
-			"Message": "View Order Failed",
+			"Message": "Order Cancellation failed",
 			"Error":   err.Error(),
 		})
 		return

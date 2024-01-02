@@ -149,12 +149,13 @@ func EditUserProfile(user domain.UserProfileUpdate, id int) (*domain.UserProfile
 	return &user, nil
 }
 
-func ProfileDetails(id int) (*domain.UserProfileUpdate, error) {
+func ProfileDetails(id int) (*domain.ProfileDetails, error) {
 	userDetails, err := repository.ProfileDetails(id)
+	profileDetails := util.BuildProfileDetails(userDetails)
 	if err != nil {
 		return nil, err
 	}
-	return userDetails, nil
+	return profileDetails, nil
 }
 
 func ViewAddress(id int) ([]domain.Address, error) {

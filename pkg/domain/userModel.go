@@ -40,3 +40,11 @@ type ResetPassword struct {
 	OTP         string `json:"otp"`
 	NewPassword string `json:"new_password" validate:"required,min=8,max=16"`
 }
+
+type ProfileDetails struct {
+	Username    string `json:"username"`
+	Phone       string `json:"phone"`
+	Email       string `json:"email"`
+	Dateofbirth string `json:"dateofbirth"`
+	Gender      string `json:"gender"`
+}
