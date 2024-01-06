@@ -129,6 +129,14 @@ func ViewAddress(id int) ([]domain.Address, error) {
 	return userAdd, nil
 }
 
+func ViewAddressByID(addressId uint) (*domain.Address, error) {
+	address := domain.Address{}
+	if err := db.DB.Where("id=?", addressId).First(&address).Error; err != nil {
+		return nil, err
+	}
+	return &address, nil
+
+}
 func CheckValidAddress(userId, addressId int) error {
 	address := domain.Address{}
 	if err := db.DB.Where("id=? AND user_id=?", addressId, userId).First(&address).Error; err != nil {

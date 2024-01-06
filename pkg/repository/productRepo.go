@@ -518,6 +518,17 @@ func ViewOrdersByUserID(id int) ([]domain.Order, error) {
 	return orders, nil
 }
 
+func OrderByOrderID(userId, orderId int) (*domain.Order, error) {
+	order := domain.Order{}
+	if err := db.DB.Where("user_id=? AND booking_id=?", userId, orderId).First(&order).Error; err != nil {
+		return nil, err
+	}
+	if order.OrderStatus != "Order Delivered" {
+		return nil, errors.New("Failed to get invoice")
+	}
+	return &order, nil
+}
+
 func OrderCancel(userId, orderId int) (*domain.Order, error) {
 	orders := domain.Order{}
 	if err := db.DB.Where("user_id =? AND booking_id=?", userId, orderId).First(&orders).Error; err != nil {

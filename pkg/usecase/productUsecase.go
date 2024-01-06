@@ -1,8 +1,12 @@
 package usecase
 
 import (
+	"bytes"
 	"errors"
+	"io/ioutil"
+	"os/exec"
 	"strings"
+	"text/template"
 
 	"github.com/aparnasukesh/shoezone/pkg/domain"
 	"github.com/aparnasukesh/shoezone/pkg/repository"
@@ -991,4 +995,57 @@ func ChangeOrderStatus() error {
 		return err
 	}
 	return nil
+}
+
+// User - Invoice -------------------------------------------------------------------------------------------------
+func InvoiceDetails(userId, orderId int) (*domain.Invoice, error) {
+	order, err := repository.OrderByOrderID(userId, orderId)
+	if err != nil {
+		return nil, err
+	}
+
+	_, oredrItems, err := repository.ViewOrdersByID(userId, orderId)
+	if err != nil {
+		return nil, err
+	}
+	user, err := repository.GetUserByID(userId)
+	if err != nil {
+		return nil, err
+	}
+
+	address, err := repository.ViewAddressByID(order.AddressID)
+	invoiceDetails, err := util.BuildInvoiceDetails(*order, oredrItems, *user, *address)
+
+	tmpl, err := template.New("invoice").Parse(util.InvoiceTemplate)
+	if err != nil {
+
+		return nil, err
+	}
+
+	var buf bytes.Buffer
+
+	err = tmpl.Execute(&buf, invoiceDetails)
+	if err != nil {
+
+		return nil, err
+
+	}
+
+	htmlFile := "./pkg/templates/invoice.html"
+	err = ioutil.WriteFile(htmlFile, buf.Bytes(), 0644)
+	if err != nil {
+		return nil, err
+
+	}
+
+	cmd := exec.Command("wkhtmltopdf", htmlFile, "./data/invoice.pdf")
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+
+	err = cmd.Run()
+	if err != nil {
+		return nil, err
+
+	}
+	return &invoiceDetails, nil
 }

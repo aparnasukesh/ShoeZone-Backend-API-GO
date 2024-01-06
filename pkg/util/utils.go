@@ -348,3 +348,64 @@ func BuildProfileDetails(profile *domain.UserProfileUpdate) *domain.ProfileDetai
 
 	return &profileDetails
 }
+
+func BuildInvoiceDetails(order domain.Order, orderItems []domain.OrderItem, user domain.User, address domain.Address) (domain.Invoice, error) {
+	addressDetails := []domain.UserAddress{}
+	products := []domain.OrderProduct{}
+
+	invoice := domain.Invoice{}
+	for _, orderItem := range orderItems {
+		orderitem := domain.OrderProduct{
+			ProductName: orderItem.Product.ProductName,
+			Price:       orderItem.UnitPrice,
+			Quantity:    int(orderItem.Quantity),
+			TotalAmount: orderItem.TotalPrice,
+		}
+		products = append(products, orderitem)
+	}
+
+	addressDetails = append(addressDetails, domain.UserAddress{
+		Street:  address.Street,
+		City:    address.City,
+		State:   address.State,
+		PINCode: address.PINCode,
+		Country: address.Country,
+	})
+
+	invoice.Name = user.Username
+	invoice.Email = user.Email
+	invoice.OrderID = int(order.BookingID)
+	invoice.Date = order.OrderDate
+	invoice.PaymentMethod = order.PaymentMethod
+	invoice.Address = addressDetails
+	invoice.Products = products
+	invoice.TotalAmount = order.AmountPayable
+
+	return invoice, nil
+
+}
+
+const InvoiceTemplate = `
+Order ID : {{.OrderID}}<br>
+Order Date: {{.Date}} <br><hr>
+Name : {{.Name}} <br>
+Email: {{.Email}}<br>
+<hr>
+Billing Address :
+{{range .Address}}
+Area : {{.Street}} <br>
+City : {{.City}} <br>
+Pincode : {{.PINCode}} <br>
+State : {{.State}} <br>
+Country : {{.Country}} <br>
+{{end}}
+<hr>
+Payment method : {{.PaymentMethod}}<br>
+<hr>
+{{range .Products}}
+Product :{{.ProductName}}  <br>
+Price : {{.Price}}<br><br>
+{{end}}
+<hr><br>
+Total Amount : {{.TotalAmount}}<br>
+`
