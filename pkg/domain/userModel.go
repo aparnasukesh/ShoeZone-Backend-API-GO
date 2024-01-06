@@ -26,6 +26,14 @@ type Address struct {
 	UserAddress User   `gorm:"foreignkey:UserID"`
 }
 
+type UserAddress struct {
+	Street  string
+	City    string
+	State   string
+	PINCode uint
+	Country string
+}
+
 // Create a new struct for updating user profile without Isverified, Isadmin, and Otp fields
 type UserProfileUpdate struct {
 	Username    string `json:"username" validate:"required,min=8,max=24"`

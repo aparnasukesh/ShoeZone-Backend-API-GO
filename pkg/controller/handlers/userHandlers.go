@@ -110,7 +110,7 @@ func Login(ctx *gin.Context) {
 
 }
 
-// User-Products------------------------------------------------
+// User-Products----------------------------------------------------------------------------------------------------
 func GetProducts(ctx *gin.Context) {
 	pageStr := ctx.DefaultQuery("page", "0")
 	limitStr := ctx.DefaultQuery("limit", "0")
@@ -1402,5 +1402,53 @@ func WalletPaymentOrderItemByID(ctx *gin.Context) {
 		"Message": "Order successfull",
 		"Error":   false,
 	})
+
+}
+
+// User - Invoice -------------------------------------------------------------------------------------------------
+func InvoiceDetails(ctx *gin.Context) {
+	authorization := ctx.Request.Header.Get("Authorization")
+	userId, err := usecase.GetUserIDFromToken(authorization)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Failed to get invoice details",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	orderIdStr := ctx.DefaultQuery("order_id", "0")
+	orderId, err := strconv.Atoi(orderIdStr)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Failed to get invoice details",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	details, err := usecase.InvoiceDetails(userId, orderId)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Failed to get invoice details",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success":         true,
+		"Message":         "Successfully get invoice details",
+		"Error":           false,
+		"Invoice Details": details,
+	})
+
+}
+
+func InvoiceDownload(ctx *gin.Context) {
+
+	ctx.Header("Content-Disposition", "attachment; filename=invoice.pdf")
+	ctx.Header("Content-Type", "application/pdf")
+	ctx.File("./data/invoice.pdf")
 
 }

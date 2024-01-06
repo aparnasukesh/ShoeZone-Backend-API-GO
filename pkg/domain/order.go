@@ -135,3 +135,14 @@ type RazorPay struct {
 	PaymentID     string
 	TotalAmount   float64
 }
+
+type Invoice struct {
+	Name          string
+	Email         string
+	PaymentMethod string
+	Date          time.Time
+	OrderID       int
+	Address       []UserAddress
+	Products      []OrderProduct
+	TotalAmount   float64
+}

@@ -68,6 +68,10 @@ func Routes(r *gin.Engine) {
 		// User - Wallet
 		userAuthGroup.POST("/wallet", handler.AddAmountToWallet)
 
+		// User - Invoice
+		userAuthGroup.GET("/invoice", handler.InvoiceDetails)
+		userAuthGroup.GET("/invoice/download", handler.InvoiceDownload)
+
 		// User - Payment
 		payment := userAuthGroup.Group("/payment")
 		{
