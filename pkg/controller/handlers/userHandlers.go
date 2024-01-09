@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/aparnasukesh/shoezone/pkg/domain"
 	"github.com/aparnasukesh/shoezone/pkg/usecase"
@@ -1450,5 +1451,54 @@ func InvoiceDownload(ctx *gin.Context) {
 	ctx.Header("Content-Disposition", "attachment; filename=invoice.pdf")
 	ctx.Header("Content-Type", "application/pdf")
 	ctx.File("./data/invoice.pdf")
+
+}
+
+// Admin - Sales Report-------------------------------------------------------------------------------------------
+func SalesReport(ctx *gin.Context) {
+	fromDate := ctx.DefaultQuery("from_date", "")
+	toDate := ctx.DefaultQuery("to_date", "")
+
+	parseFromDate, err := time.Parse("2006-01-02", fromDate)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Getting Sales report failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	parseToDate, err := time.Parse("2006-01-02", toDate)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Getting Sales report failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+
+	salesDetails, err := usecase.SalesReport(parseFromDate, parseToDate)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Failed to get sales report details",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success":              true,
+		"Message":              "Successfully get sales report",
+		"Error":                false,
+		"Sales Report Details": salesDetails,
+	})
+}
+
+func SalesReportDownload(ctx *gin.Context) {
+
+	ctx.Header("Content-Disposition", "attachment; filename=salesReport.pdf")
+	ctx.Header("Content-Type", "application/pdf")
+	ctx.File("./data/salesReport.pdf")
 
 }

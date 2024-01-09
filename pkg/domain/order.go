@@ -136,6 +136,7 @@ type RazorPay struct {
 	TotalAmount   float64
 }
 
+// Invoice
 type Invoice struct {
 	Name          string
 	Email         string
@@ -144,5 +145,21 @@ type Invoice struct {
 	OrderID       int
 	Address       []UserAddress
 	Products      []OrderProduct
+	TotalAmount   float64
+}
+
+// Sales - Report
+type Sales struct {
+	OrderStatus string
+	OrderID     int
+	TotalAmount float64
+}
+
+type SalesReport struct {
+	FromDate      time.Time
+	ToDate        time.Time
+	Sale          []Sales
+	Products      []OrderProduct
+	TotalQuantity int
 	TotalAmount   float64
 }

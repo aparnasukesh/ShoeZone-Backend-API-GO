@@ -140,6 +140,10 @@ func Routes(r *gin.Engine) {
 		adminGroup.PATCH("/coupon/:id", handler.UpdateCoupon)
 		adminGroup.GET("/coupon", handler.ViewCoupons)
 
+		//Admin - Sales Report
+		adminGroup.GET("/sales/report", handler.SalesReport)
+		adminGroup.GET("/salesreport/download", handler.SalesReportDownload)
+
 	}
 
 }

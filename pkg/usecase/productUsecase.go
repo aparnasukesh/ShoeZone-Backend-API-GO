@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/aparnasukesh/shoezone/pkg/domain"
 	"github.com/aparnasukesh/shoezone/pkg/repository"
@@ -1048,4 +1049,49 @@ func InvoiceDetails(userId, orderId int) (*domain.Invoice, error) {
 
 	}
 	return &invoiceDetails, nil
+}
+
+func SalesReport(parseFromDate, parseToDate time.Time) (*domain.SalesReport, error) {
+	orders, orderIds, err := repository.SalesReport(parseFromDate, parseToDate)
+	if err != nil {
+		return nil, err
+	}
+
+	orderItems, err := repository.GetOrderItemsByOrderIDs(orderIds)
+	sales := util.BuildSales(orders)
+
+	salesDetails, err := util.BuildSalesReport(orders, orderItems, sales, parseFromDate, parseToDate)
+
+	tmpl, err := template.New("salesReport").Parse(util.SalesReportTemplate)
+	if err != nil {
+
+		return nil, err
+	}
+
+	var buf bytes.Buffer
+
+	err = tmpl.Execute(&buf, salesDetails)
+	if err != nil {
+
+		return nil, err
+
+	}
+
+	htmlFile := "./pkg/templates/salesReport.html"
+	err = ioutil.WriteFile(htmlFile, buf.Bytes(), 0644)
+	if err != nil {
+		return nil, err
+
+	}
+
+	cmd := exec.Command("wkhtmltopdf", htmlFile, "./data/salesReport.pdf")
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+
+	err = cmd.Run()
+	if err != nil {
+		return nil, err
+
+	}
+	return &salesDetails, nil
 }

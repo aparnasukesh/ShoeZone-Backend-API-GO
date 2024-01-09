@@ -785,3 +785,25 @@ func ChangeOrderStatus() error {
 
 	return nil
 }
+
+// Admin - Sales Report -------------------------------------------------------------------------------------------
+func SalesReport(fromDate, toDate time.Time) ([]domain.Order, []int, error) {
+	sales := []domain.Order{}
+	orderIds := []int{}
+	if err := db.DB.Where("order_status = ? AND order_date BETWEEN ? AND ?", "Order Delivered", fromDate, toDate).Find(&sales).Error; err != nil {
+		return nil, nil, err
+	}
+
+	for _, id := range sales {
+		orderIds = append(orderIds, int(id.BookingID))
+	}
+	return sales, orderIds, nil
+}
+
+func GetOrderItemsByOrderIDs(orderIDs []int) ([]domain.OrderItem, error) {
+	orderItems := []domain.OrderItem{}
+	if err := db.DB.Where("order_id IN (?)", orderIDs).Preload("Product").Find(&orderItems).Error; err != nil {
+		return nil, err
+	}
+	return orderItems, nil
+}
