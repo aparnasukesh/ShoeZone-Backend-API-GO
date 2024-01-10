@@ -807,3 +807,69 @@ func GetOrderItemsByOrderIDs(orderIDs []int) ([]domain.OrderItem, error) {
 	}
 	return orderItems, nil
 }
+
+// Admin - Dashboard--------------------------------------------------------------------------------------------------
+func GetDashBoard() (float64, int, error) {
+	var totalSales float64
+	var totalOrders int64
+
+	if err := db.DB.Model(&domain.Order{}).Select("COALESCE(SUM(amount_payable), 0)").Scan(&totalSales).Error; err != nil {
+		return 0, 0, err
+	}
+	if err := db.DB.Model(&domain.Order{}).Count(&totalOrders).Error; err != nil {
+		return 0, 0, err
+	}
+	return totalSales, int(totalOrders), nil
+}
+
+func GetYearlySales(year int) (float64, error) {
+	var totalAmount float64
+	if err := db.DB.Model(&domain.Order{}).
+		Where("order_status=? AND EXTRACT(YEAR FROM order_date) = ?", "Order Delivered", year).
+		Select("COALESCE(SUM(amount_payable), 0)").
+		Scan(&totalAmount).Error; err != nil {
+		return 0, err
+	}
+	return totalAmount, nil
+}
+
+func GetMonthlySales(year, month int) (float64, error) {
+	var totalAmount float64
+	if err := db.DB.Model(&domain.Order{}).
+		Where("order_status=? AND EXTRACT(YEAR FROM order_date) = ? AND EXTRACT(MONTH FROM order_date) = ?", "Order Delivered", year, month).
+		Select("COALESCE(SUM(amount_payable), 0)").
+		Scan(&totalAmount).Error; err != nil {
+		return 0, err
+	}
+	return totalAmount, nil
+}
+
+func GetWeeklySales(year, week int) (float64, error) {
+	var totalAmount float64
+	err := db.DB.Model(&domain.Order{}).
+		Where("order_status=? AND EXTRACT(YEAR FROM order_date) = ? AND EXTRACT(WEEK FROM order_date) = ?", "Order Delivered", year, week).
+		Select("COALESCE(SUM(amount_payable), 0)").
+		Scan(&totalAmount).Error
+	return totalAmount, err
+}
+
+func GetTotalSalesAmountToday() (float64, error) {
+	var totalAmount float64
+	if err := db.DB.Model(&domain.Order{}).
+		Where("DATE(order_date) = ?", time.Now().Format("2006-01-02")).
+		Select("COALESCE(SUM(amount_payable), 0)").
+		Scan(&totalAmount).Error; err != nil {
+		return 0, err
+	}
+	return totalAmount, nil
+}
+
+func GetTotalOrdersToday() (int, error) {
+	var totalOrders int64
+	if err := db.DB.Model(&domain.Order{}).
+		Where("DATE(order_date) = ?", time.Now().Format("2006-01-02")).
+		Count(&totalOrders).Error; err != nil {
+		return 0, err
+	}
+	return int(totalOrders), nil
+}

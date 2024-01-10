@@ -1051,6 +1051,7 @@ func InvoiceDetails(userId, orderId int) (*domain.Invoice, error) {
 	return &invoiceDetails, nil
 }
 
+// Admin - Sales Report---------------------------------------------------------------------------------------------
 func SalesReport(parseFromDate, parseToDate time.Time) (*domain.SalesReport, error) {
 	orders, orderIds, err := repository.SalesReport(parseFromDate, parseToDate)
 	if err != nil {
@@ -1094,4 +1095,53 @@ func SalesReport(parseFromDate, parseToDate time.Time) (*domain.SalesReport, err
 
 	}
 	return &salesDetails, nil
+}
+
+// Admin - Dashboard---------------------------------------------------------------------------------------------
+func GetDashBoard() (float64, int, error) {
+	totalSales, totalOrders, err := repository.GetDashBoard()
+	if err != nil {
+		return 0, 0, err
+	}
+	return totalSales, totalOrders, nil
+}
+
+func GetYearlySales(year int) (float64, error) {
+	totalSales, err := repository.GetYearlySales(year)
+	if err != nil {
+		return 0, err
+	}
+	return totalSales, nil
+}
+
+func GetMonthlySales(year, month int) (float64, error) {
+	totalSales, err := repository.GetMonthlySales(year, month)
+	if err != nil {
+		return 0, err
+	}
+	return totalSales, nil
+}
+
+func GetWeeklySales(year, week int) (float64, error) {
+	totalSales, err := repository.GetWeeklySales(year, week)
+	if err != nil {
+		return 0, err
+	}
+	return totalSales, nil
+}
+
+func GetTotalSalesAmountToday() (float64, error) {
+	totalSales, err := repository.GetTotalSalesAmountToday()
+	if err != nil {
+		return 0, err
+	}
+	return totalSales, nil
+}
+
+func GetTotalOrdersToday() (int, error) {
+	totalOrders, err := repository.GetTotalOrdersToday()
+	if err != nil {
+		return 0, err
+	}
+	return totalOrders, nil
 }

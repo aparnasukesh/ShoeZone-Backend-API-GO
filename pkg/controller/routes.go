@@ -144,6 +144,13 @@ func Routes(r *gin.Engine) {
 		adminGroup.GET("/sales/report", handler.SalesReport)
 		adminGroup.GET("/salesreport/download", handler.SalesReportDownload)
 
+		// Admin - Dashboard
+		adminGroup.GET("/dashboard", handler.GetDashBoard)
+		adminGroup.GET("/sales/yearly", handler.GetYearlySales)
+		adminGroup.GET("/sales/monthly", handler.GetMonthlySales)
+		adminGroup.GET("/sales/weekly", handler.GetWeeklySales)
+		adminGroup.GET("/sales/today", handler.GetTotalSalesAmountToday)
+		adminGroup.GET("/sales/order/today", handler.GetTotalOrdersToday)
 	}
 
 }
