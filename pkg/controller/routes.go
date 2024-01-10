@@ -150,7 +150,7 @@ func Routes(r *gin.Engine) {
 		adminGroup.GET("/sales/monthly", handler.GetMonthlySales)
 		adminGroup.GET("/sales/weekly", handler.GetWeeklySales)
 		adminGroup.GET("/sales/today", handler.GetTotalSalesAmountToday)
-		adminGroup.GET("/sales/order/today", handler.GetTotalOrdersToday)
+		adminGroup.GET("/sales/orders/today", handler.GetTotalOrdersToday)
 	}
 
 }
