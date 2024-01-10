@@ -409,3 +409,72 @@ Price : {{.Price}}<br><br>
 <hr><br>
 Total Amount : {{.TotalAmount}}<br>
 `
+
+func BuildSales(orders []domain.Order) []domain.Sales {
+	sales := []domain.Sales{}
+
+	for _, order := range orders {
+		sale := domain.Sales{
+			OrderStatus: order.OrderStatus,
+			OrderID:     int(order.BookingID),
+			TotalAmount: order.AmountPayable,
+		}
+		sales = append(sales, sale)
+	}
+	return sales
+}
+
+func BuildSalesReport(orders []domain.Order, orderItems []domain.OrderItem, sales []domain.Sales, fromDate, toDate time.Time) (domain.SalesReport, error) {
+	salesDetails := domain.SalesReport{}
+	products := []domain.OrderProduct{}
+
+	quantity := 0
+	totalAmount := 0.0
+
+	for _, orderItem := range orderItems {
+		product := domain.OrderProduct{
+			ProductName: orderItem.Product.ProductName,
+			Price:       orderItem.UnitPrice,
+			Quantity:    int(orderItem.Quantity),
+			TotalAmount: orderItem.TotalPrice,
+		}
+		products = append(products, product)
+	}
+	for i := 0; i < len(orders); i++ {
+		totalAmount = totalAmount + (orders[i].AmountPayable)
+	}
+	for i := 0; i < len(products); i++ {
+		quantity = quantity + products[i].Quantity
+	}
+	salesDetails.FromDate = fromDate
+	salesDetails.ToDate = toDate
+	salesDetails.Sale = sales
+	salesDetails.Products = products
+	salesDetails.TotalQuantity = quantity
+	salesDetails.TotalAmount = totalAmount
+
+	return salesDetails, nil
+
+}
+
+const SalesReportTemplate = `
+Sales Report from {{.FromDate}} to {{.ToDate}}<br>
+<hr>
+Order Summary:
+{{range .Sale}}<hr>
+  OrderID: {{.OrderID}}<br>
+  Status: {{.OrderStatus}}<br>
+  Total Amount: {{printf "%.2f" .TotalAmount}}<br>
+{{end}}
+<hr>
+Product Details:
+{{range .Products}}<hr>
+  Product: {{.ProductName}}<br>
+  Quantity: {{.Quantity}}<br>
+  Unit Price: {{printf "%.2f" .Price}}<br>
+  Total Price: {{printf "%.2f" .TotalAmount}}<br>
+{{end}}
+<hr>
+Total Quantity: {{.TotalQuantity}}<br>
+Total Amount: {{printf "%.2f" .TotalAmount}}<br>
+`

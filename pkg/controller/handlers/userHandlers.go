@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/aparnasukesh/shoezone/pkg/domain"
 	"github.com/aparnasukesh/shoezone/pkg/usecase"
@@ -1450,5 +1451,218 @@ func InvoiceDownload(ctx *gin.Context) {
 	ctx.Header("Content-Disposition", "attachment; filename=invoice.pdf")
 	ctx.Header("Content-Type", "application/pdf")
 	ctx.File("./data/invoice.pdf")
+
+}
+
+// Admin - Sales Report-------------------------------------------------------------------------------------------
+func SalesReport(ctx *gin.Context) {
+	fromDate := ctx.DefaultQuery("from_date", "")
+	toDate := ctx.DefaultQuery("to_date", "")
+
+	parseFromDate, err := time.Parse("2006-01-02", fromDate)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Getting Sales report failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	parseToDate, err := time.Parse("2006-01-02", toDate)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Getting Sales report failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+
+	salesDetails, err := usecase.SalesReport(parseFromDate, parseToDate)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Failed to get sales report details",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success":              true,
+		"Message":              "Successfully get sales report",
+		"Error":                false,
+		"Sales Report Details": salesDetails,
+	})
+}
+
+func SalesReportDownload(ctx *gin.Context) {
+
+	ctx.Header("Content-Disposition", "attachment; filename=salesReport.pdf")
+	ctx.Header("Content-Type", "application/pdf")
+	ctx.File("./data/salesReport.pdf")
+
+}
+
+// Admin - Dashboard ---------------------------------------------------------------------------------------------
+func GetDashBoard(ctx *gin.Context) {
+	totalSales, totalOrders, err := usecase.GetDashBoard()
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Dash board data fetched failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success":      true,
+		"Message":      "Dash board data fetched successfully",
+		"Error":        false,
+		"Total Sales":  totalSales,
+		"Total Orders": totalOrders,
+	})
+
+}
+
+func GetYearlySales(ctx *gin.Context) {
+	yearStr := ctx.DefaultQuery("year", "0")
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Fetching yearly sales data failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	totalSales, err := usecase.GetYearlySales(year)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Fetching yearly sales data failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success":     true,
+		"Message":     "Fetching yearly sales data successfully",
+		"Error":       false,
+		"Total Sales": totalSales,
+	})
+}
+
+func GetMonthlySales(ctx *gin.Context) {
+	yearStr := ctx.DefaultQuery("year", "0")
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Fetching monthly sales data failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	monthStr := ctx.DefaultQuery("month", "0")
+	month, err := strconv.Atoi(monthStr)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Fetching yearly sales data failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	totalSales, err := usecase.GetMonthlySales(year, month)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Fetching monthly sales data failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success":     true,
+		"Message":     "Fetching monthly sales data successfully",
+		"Error":       false,
+		"Total Sales": totalSales,
+	})
+}
+
+func GetWeeklySales(ctx *gin.Context) {
+	yearStr := ctx.DefaultQuery("year", "0")
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Fetching weekly sales data failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	weekStr := ctx.DefaultQuery("week", "0")
+	week, err := strconv.Atoi(weekStr)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Success": false,
+			"Message": "Fetching weekly sales data failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	totalSales, err := usecase.GetWeeklySales(year, week)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Fetching weekly sales data failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success":     true,
+		"Message":     "Fetching weekly sales data successfully",
+		"Error":       false,
+		"Total Sales": totalSales,
+	})
+
+}
+
+func GetTotalSalesAmountToday(ctx *gin.Context) {
+	totalSales, err := usecase.GetTotalSalesAmountToday()
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Fetching todays sales data failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success":     true,
+		"Message":     "Fetching todays sales data successfully",
+		"Error":       false,
+		"Total Sales": totalSales,
+	})
+
+}
+
+func GetTotalOrdersToday(ctx *gin.Context) {
+	totalOrders, err := usecase.GetTotalOrdersToday()
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Success": false,
+			"Message": "Fetching todays orders failed",
+			"Error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"Success":     true,
+		"Message":     "Fetching todays orders  successfully",
+		"Error":       false,
+		"Total Sales": totalOrders,
+	})
 
 }
