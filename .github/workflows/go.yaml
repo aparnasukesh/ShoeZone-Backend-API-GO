@@ -18,10 +18,10 @@ jobs:
       - name: Build go
         run: go build -v ./...
 
-      - name: setting env file
-        run: | 
-          touch .env
-          echo "${{ secrets.ENV_FILE }}" > .env
+      # - name: setting env file
+      #   run: | 
+      #     touch .env
+      #     echo "${{ secrets.ENV_FILE }}" > .env
 
       - name: Start new process in the background
-        run: go run main.go -v 45 &
+        run: go run ./cmd/main.go -v 45 &
