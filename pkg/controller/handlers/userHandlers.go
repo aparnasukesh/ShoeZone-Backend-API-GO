@@ -14,6 +14,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var (
+	Register_user = usecase.RegisterUser
+)
+
 func RegisterUser(ctx *gin.Context) {
 
 	userData := domain.User{}
@@ -26,8 +30,8 @@ func RegisterUser(ctx *gin.Context) {
 		})
 		return
 	}
-
-	err := usecase.RegisterUser(&userData)
+	err := Register_user(&userData)
+	// err := usecase.RegisterUser(&userData)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"Success": false,
@@ -38,9 +42,9 @@ func RegisterUser(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{
-		"Success": true,
+		"Success": "true",
 		"Message": "Redirect: http://localhost:8000/user/register/validate",
-		"Error":   nil,
+		"Error":   "nil",
 	})
 
 }
