@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/aparnasukesh/shoezone/pkg/config"
@@ -15,5 +16,6 @@ func main() {
 	db.DbConnect()
 	engine := server.SeverConnect()
 	controller.Routes(engine)
+	fmt.Println("Running...")
 	engine.Run(":" + os.Getenv("PORT"))
 }
