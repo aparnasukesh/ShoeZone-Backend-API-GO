@@ -15,7 +15,12 @@ import (
 )
 
 var (
-	Register_user = usecase.RegisterUser
+	Register_user         = usecase.RegisterUser
+	User_login            = usecase.UserLogin
+	Generate_JWt          = util.GenerateJWT
+	Get_Products          = usecase.GetProducts
+	Get_ProductByID       = usecase.GetProductByID
+	Get_ProductBy_BrandID = usecase.GetProductByBrandID
 )
 
 func RegisterUser(ctx *gin.Context) {
@@ -86,7 +91,8 @@ func Login(ctx *gin.Context) {
 		})
 		return
 	}
-	err, res := usecase.UserLogin(&userData)
+	err, res := User_login(&userData)
+	//err, res := usecase.UserLogin(&userData)
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"Success": false,
@@ -96,7 +102,8 @@ func Login(ctx *gin.Context) {
 		return
 	}
 
-	token, err := util.GenerateJWT(*res)
+	token, err := Generate_JWt(*res)
+	//token, err := util.GenerateJWT(*res)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"Success": false,
@@ -131,7 +138,8 @@ func GetProducts(ctx *gin.Context) {
 	limitNum, _ := strconv.Atoi(limitStr)
 
 	offset := pageNum * limitNum
-	products, err := usecase.GetProducts(limitNum, offset)
+	products, err := Get_Products(limitNum, offset)
+	//products, err := usecase.GetProducts(limitNum, offset)
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"Success": false,
@@ -159,7 +167,8 @@ func GetProductByID(ctx *gin.Context) {
 		})
 		return
 	}
-	product, err := usecase.GetProductByID(id)
+	product, err := Get_ProductByID(id)
+	//product, err := usecase.GetProductByID(id)
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"Success": false,
@@ -194,7 +203,8 @@ func GetProductByBrandID(ctx *gin.Context) {
 	page, _ := strconv.Atoi(pageStr)
 	offset := page * limit
 
-	products, err := usecase.GetProductByBrandID(limit, offset, id)
+	products, err := Get_ProductBy_BrandID(limit, offset, id)
+	//products, err := usecase.GetProductByBrandID(limit, offset, id)
 
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
