@@ -10,7 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// User Handlers
 // Register User
 func mockRegisterUserForTesting(userData *domain.User) error {
 	return nil
