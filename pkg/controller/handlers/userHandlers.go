@@ -24,7 +24,6 @@ var (
 )
 
 func RegisterUser(ctx *gin.Context) {
-	fmt.Println("Enter in to funtion register user")
 	userData := domain.User{}
 
 	if err := ctx.ShouldBindJSON(&userData); err != nil {
