@@ -10,12 +10,10 @@ import (
 )
 
 func RegisterUser(userData *domain.User) error {
-
 	validateErr := util.ValidateUser(*userData)
 	if validateErr != nil {
 		return validateErr
 	}
-
 	res, err := repository.FindUserByEmail(userData)
 
 	if err != nil && res == nil {
