@@ -26,6 +26,7 @@ var (
 func RegisterUser(ctx *gin.Context) {
 	userData := domain.User{}
 
+	fmt.Println("This is my resgister user")
 	if err := ctx.ShouldBindJSON(&userData); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"Success": false,
